@@ -18,6 +18,7 @@
   "devDependencies": {
     "@types/node": "^26.6.4",
     "@types/react": "~19.2.2",
+    "diff3": "0.0.3",
     "typescript": "~6.0.3"
   },
   "scripts": {
@@ -27,7 +28,8 @@
     "web": "expo start --web",
     "test": "node --test \"core/**/*.test.ts\"",
     "typecheck": "tsc --noEmit",
-    "prebuild:android": "expo prebuild --platform android"
+    "prebuild:android": "expo prebuild --platform android",
+    "differential": "node --test core/merge/merge3.differential.test.ts"
   },
   "private": true,
   "type": "module"
