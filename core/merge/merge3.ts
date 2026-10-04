@@ -71,12 +71,30 @@ export function merge3(
     const span = baseLines.slice(cluster.baseStart, cluster.baseEnd);
 
     if (cluster.baseStart === cluster.baseEnd) {
-      // A pure insertion point: both sides only added lines, deleted nothing.
-      // That is losslessly combinable, so prefer merging over escalating —
-      // two people appending their own sections to the same note is routine,
-      // and forcing a conflict there would be hostile. Order is local first.
-      for (const h of cluster.local) out.push(...h.lines);
-      for (const h of cluster.remote) out.push(...h.lines);
+      const localLines = cluster.local.flatMap((h) => h.lines);
+      const remoteLines = cluster.remote.flatMap((h) => h.lines);
+
+      if (sameLines(localLines, remoteLines)) {
+        // Both sides added the identical text. Emit it once — concatenating
+        // would duplicate it.
+        out.push(...localLines);
+        continue;
+      }
+
+      if (baseLines.length === 0 && localLines.length > 0 && remoteLines.length > 0) {
+        // Both sides are creating the same region from nothing. Nothing was
+        // deleted, but there is no defensible way to combine two competing
+        // versions of the same content, so this is a genuine conflict.
+        conflicts.push({ mergedLine: out.length, base: span, local: localLines, remote: remoteLines });
+        conflictLineCount += span.length;
+        out.push(markers.start, ...localLines, markers.middle, ...remoteLines, markers.end);
+        continue;
+      }
+
+      // An insertion into an existing document. Insertions delete nothing, so
+      // combining them cannot lose data, and two people appending their own
+      // sections to the same note is routine. Order is local first.
+      out.push(...localLines, ...remoteLines);
       continue;
     }
 
@@ -158,11 +176,14 @@ function clusterHunks(local: readonly Hunk[], remote: readonly Hunk[]): HunkClus
 
   for (const { h, side } of tagged) {
     const current = clusters[clusters.length - 1];
-    const spansCurrent =
+    const inSameRegion =
       current !== undefined &&
-      hunksConflict({ baseStart: current.baseStart, baseEnd: current.baseEnd, lines: [] }, h);
+      sameRegion(
+        { baseStart: current.baseStart, baseEnd: current.baseEnd, lines: [] },
+        h,
+      );
 
-    if (current && spansCurrent) {
+    if (current && inSameRegion) {
       current.baseStart = Math.min(current.baseStart, h.baseStart);
       current.baseEnd = Math.max(current.baseEnd, h.baseEnd);
       current[side].push(h);
@@ -179,6 +200,34 @@ function clusterHunks(local: readonly Hunk[], remote: readonly Hunk[]): HunkClus
   return clusters;
 }
 
+/**
+ * Do these two hunks describe the same region of the base?
+ *
+ * Clustering and arbitration are different questions, and conflating them is a
+ * bug: two pure insertions at the same position belong to *one* region (so they
+ * can be compared and de-duplicated) yet may not *need* arbitration. Grouping
+ * them separately would let identical insertions be emitted twice.
+ *
+ * An insertion sitting on a line the other side edited or deleted is grouped
+ * with that edit, because there is no defensible place to put the new line.
+ *
+ * Exported because this rule decides how precise the merge is.
+ */
+export function sameRegion(a: Hunk, b: Hunk): boolean {
+  if (overlaps(a.baseStart, a.baseEnd, b.baseStart, b.baseEnd)) return true;
+
+  const aPure = a.baseStart === a.baseEnd;
+  const bPure = b.baseStart === b.baseEnd;
+
+  // Two insertions at the same position are one region.
+  if (aPure && bPure && a.baseStart === b.baseStart) return true;
+
+  if (aPure && b.baseStart <= a.baseStart && a.baseStart <= b.baseEnd) return true;
+  if (bPure && a.baseStart <= b.baseStart && b.baseStart <= a.baseEnd) return true;
+
+  return false;
+}
+
 /** Shift hunk offsets so they address `lines` rather than the whole base. */
 function rebase(hunks: readonly Hunk[], offset: number): Hunk[] {
   return hunks.map((h) => ({
@@ -191,37 +240,6 @@ function rebase(hunks: readonly Hunk[], offset: number): Hunk[] {
 /** Do two half-open base intervals overlap? */
 function overlaps(aStart: number, aEnd: number, bStart: number, bEnd: number): boolean {
   return aStart < bEnd && bStart < aEnd;
-}
-
-/**
- * Do two hunks belong to the same conflict cluster?
- *
- * A pure insertion at `k` (`baseStart === baseEnd`) counts as overlapping any
- * edit that also sits at `k`, and as touching the boundary of an edit. That is
- * stricter than strictly necessary, and deliberately so: it turns an ambiguous
- * case into a visible conflict instead of an arbitrary interleaving.
- *
- * Exported because this single rule decides how precise the merge is, so it is
- * worth pinning down directly in tests.
- */
-export function hunksConflict(a: Hunk, b: Hunk): boolean {
-  if (overlaps(a.baseStart, a.baseEnd, b.baseStart, b.baseEnd)) return true;
-
-  const aPure = a.baseStart === a.baseEnd;
-  const bPure = b.baseStart === b.baseEnd;
-
-  // Two pure insertions never conflict, even at the same point: insertions
-  // delete nothing, so merge3 can just concatenate them. Forcing a conflict
-  // there would make two people appending to the same note fight, which is
-  // routine and needs no arbitration.
-  if (aPure && bPure) return false;
-
-  // An insertion sitting on a line the other side edited or deleted is
-  // genuinely ambiguous: there is no defensible place to put the new line.
-  if (aPure && b.baseStart <= a.baseStart && a.baseStart <= b.baseEnd) return true;
-  if (bPure && a.baseStart <= b.baseStart && b.baseStart <= a.baseEnd) return true;
-
-  return false;
 }
 
 function sameLines(a: readonly string[], b: readonly string[]): boolean {

@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { merge3, hunksConflict, splitLines } from './merge3.ts';
+import { merge3, sameRegion, splitLines } from './merge3.ts';
 import { applyHunks, diffHunks, lcsPairs } from './diff.ts';
 
 const L = (s: string) => splitLines(s);
@@ -62,27 +62,30 @@ test('applying hunks of an empty diff reproduces the base', () => {
 // hunksConflict
 // ---------------------------------------------------------------------------
 
-test('disjoint edits do not conflict', () => {
-  assert.equal(hunksConflict({ baseStart: 0, baseEnd: 1, lines: [] }, { baseStart: 5, baseEnd: 6, lines: [] }), false);
+test('disjoint edits are different regions', () => {
+  assert.equal(sameRegion({ baseStart: 0, baseEnd: 1, lines: [] }, { baseStart: 5, baseEnd: 6, lines: [] }), false);
 });
 
-test('overlapping edits conflict', () => {
-  assert.equal(hunksConflict({ baseStart: 0, baseEnd: 2, lines: [] }, { baseStart: 1, baseEnd: 3, lines: [] }), true);
+test('overlapping edits are one region', () => {
+  assert.equal(sameRegion({ baseStart: 0, baseEnd: 2, lines: [] }, { baseStart: 1, baseEnd: 3, lines: [] }), true);
 });
 
-test('two insertions at the same point are combinable, not a conflict', () => {
-  // Deliberate policy: insertions delete nothing, so combining them cannot lose
-  // data. Two people appending to the same note is routine; escalating would be
-  // hostile for no benefit.
-  assert.equal(hunksConflict({ baseStart: 3, baseEnd: 3, lines: [] }, { baseStart: 3, baseEnd: 3, lines: [] }), false);
+test('two insertions at the same point are one region', () => {
+  // They must be grouped so they can be compared and de-duplicated. Whether
+  // that then needs arbitration is a separate decision, made in merge3.
+  assert.equal(sameRegion({ baseStart: 3, baseEnd: 3, lines: [] }, { baseStart: 3, baseEnd: 3, lines: [] }), true);
 });
 
-test('an insertion at an edited line conflicts', () => {
-  assert.equal(hunksConflict({ baseStart: 3, baseEnd: 3, lines: [] }, { baseStart: 2, baseEnd: 4, lines: [] }), true);
+test('insertions at different points are different regions', () => {
+  assert.equal(sameRegion({ baseStart: 1, baseEnd: 1, lines: [] }, { baseStart: 5, baseEnd: 5, lines: [] }), false);
 });
 
-test('an insertion just past an edit does not conflict', () => {
-  assert.equal(hunksConflict({ baseStart: 3, baseEnd: 3, lines: [] }, { baseStart: 3, baseEnd: 4, lines: [] }), true);
+test('an insertion at an edited line is one region', () => {
+  assert.equal(sameRegion({ baseStart: 3, baseEnd: 3, lines: [] }, { baseStart: 2, baseEnd: 4, lines: [] }), true);
+});
+
+test('an insertion just past an edit is one region', () => {
+  assert.equal(sameRegion({ baseStart: 3, baseEnd: 3, lines: [] }, { baseStart: 3, baseEnd: 4, lines: [] }), true);
 });
 
 // ---------------------------------------------------------------------------
@@ -124,6 +127,20 @@ test('one side inserted, the other appended elsewhere', () => {
   const r = merge3('a\nz', 'a\nmid\nz', 'a\nz\nend');
   assert.equal(r.clean, true);
   assert.equal(r.text, 'a\nmid\nz\nend');
+});
+
+test('identical insertions on both sides are emitted once', () => {
+  // Regression: identical insertions once landed in separate clusters and were
+  // emitted twice, producing "same\nsame".
+  const r = merge3('', 'same', 'same');
+  assert.equal(r.clean, true);
+  assert.equal(r.text, 'same');
+});
+
+test('identical insertions into an existing document are emitted once', () => {
+  const r = merge3('a', 'a\nnew', 'a\nnew');
+  assert.equal(r.clean, true);
+  assert.equal(r.text, 'a\nnew');
 });
 
 test('identical change on both sides merges once', () => {
@@ -305,11 +322,20 @@ test('merging local against remote is symmetric in what it detects', () => {
   assert.equal(x.conflicts.length, y.conflicts.length);
 });
 
-test('empty base with content on both sides merges', () => {
-  // Two insertions into an empty file: nothing was deleted, so nothing is lost.
+test('empty base with content on both sides conflicts', () => {
+  // Both sides are creating the same region from nothing. Nothing was deleted,
+  // but two competing versions of the same content have no defensible
+  // combination — concatenating would produce a document nobody wrote.
   const r = merge3('', 'local', 'remote');
+  assert.equal(r.clean, false);
+  assert.match(r.text, /local/);
+  assert.match(r.text, /remote/);
+});
+
+test('identical content created on both sides is not a conflict', () => {
+  const r = merge3('', 'same', 'same');
   assert.equal(r.clean, true);
-  assert.equal(r.text, 'local\nremote');
+  assert.equal(r.text, 'same');
 });
 
 test('empty base with content on one side is clean', () => {
