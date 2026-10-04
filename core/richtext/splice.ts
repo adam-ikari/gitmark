@@ -37,10 +37,25 @@ export function shiftOffset(offset: number, splice: Splice): number {
   return start + text.length;
 }
 
-/** A caret/selection pair in markdown source coordinates. */
+/**
+ * A caret/selection pair in markdown source coordinates.
+ *
+ * `clampSelection` exists because a caret offset must always be a valid
+ * insertion point. React Native clamps out-of-range selections itself, so an
+ * offset past the end of the text silently puts the caret somewhere the user
+ * never asked for. Clamping at the edge keeps our idea of the caret and the
+ * platform's in agreement.
+ */
 export interface Selection {
   anchor: number;
   focus: number;
+}
+
+/** Clamp both ends into `[0, length]`, treating a non-finite offset as 0. */
+export function clampSelection(sel: Selection, length: number): Selection {
+  const limit = Math.max(0, length);
+  const one = (o: number) => Math.max(0, Math.min(Number.isFinite(o) ? o : 0, limit));
+  return { anchor: one(sel.anchor), focus: one(sel.focus) };
 }
 
 export function selectionRange(sel: Selection): [number, number] {
