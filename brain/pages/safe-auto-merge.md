@@ -5,7 +5,7 @@ category: decision
 status: active
 tags: [diff3 三方合併, 真衝突才提示]
 created: "2026-10-04T13:39:43"
-updated: "2026-10-04T13:40:21"
+updated: "2026-10-04T16:21:53"
 ---
 
 <!-- compiled_truth -->
@@ -40,4 +40,10 @@ updated: "2026-10-04T13:40:21"
   kind: decision
   summary: Rewrote compiled_truth to the new best understanding
   source: user-confirmed 2026-10-04
+  affects: [safe-auto-merge]
+
+- time: 2026-10-04T16:21:53
+  kind: decision
+  summary: Settled two merge policies and the real no-data-loss invariant while implementing diff3
+  source: merge3 implementation 2026-10-04
   affects: [safe-auto-merge]
