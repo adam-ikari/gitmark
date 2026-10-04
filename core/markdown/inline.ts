@@ -316,8 +316,20 @@ export function parseInlineRange(src: string, srcStart: number, srcEnd: number):
               ? { type: 'strike', children: parseInlineRange(src, innerStart, innerEnd) }
               : { type: 'strong', children: parseInlineRange(src, innerStart, innerEnd) };
 
-        const node: Inline = triple ? { type: 'em', children: [leaf] } : leaf;
-        push(node, i, close + (triple ? 3 : runLen));
+        if (triple) {
+          // `***x***` is em[strong[x]]. The inner strong node must carry real
+          // ranges, because the editor maps a caret onto them — leaving it
+          // range-less makes its srcStart/srcEnd undefined, which silently
+          // breaks mark toggling.
+          const strong: RangedInline = {
+            ...leaf,
+            srcStart: i + 1,
+            srcEnd: close + 2,
+          } as RangedInline;
+          push({ type: 'em', children: [strong] }, i, close + 3);
+        } else {
+          push(leaf, i, close + runLen);
+        }
         i = close + (triple ? 3 : runLen);
         bufStart = i;
         continue;
