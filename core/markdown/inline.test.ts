@@ -166,25 +166,25 @@ test('source ranges point at the construct', () => {
   const src = 'a **bold** b';
   const nodes = parseInlineRange(src, 0, src.length);
   const strong = nodes.find((n) => n.type === 'strong')!;
-  assert.equal(src.slice(strong.start, strong.end), '**bold**');
+  assert.equal(src.slice(strong.srcStart, strong.srcEnd), '**bold**');
 });
 
 test('source ranges are absolute with an offset window', () => {
   const src = 'xxxx **bold** yyyy';
   const nodes = parseInlineRange(src, 5, src.length);
   const strong = nodes.find((n) => n.type === 'strong')!;
-  assert.equal(strong.start, 5);
-  assert.equal(src.slice(strong.start, strong.end), '**bold**');
+  assert.equal(strong.srcStart, 5);
+  assert.equal(src.slice(strong.srcStart, strong.srcEnd), '**bold**');
 });
 
 test('ranges are contiguous and cover the source', () => {
   const src = 'a **b** _c_ `d` [e](/f)';
   const nodes = parseInlineRange(src, 0, src.length);
   for (let i = 1; i < nodes.length; i++) {
-    assert.equal(nodes[i - 1]!.end, nodes[i]!.start, `gap at ${i}`);
+    assert.equal(nodes[i - 1]!.srcEnd, nodes[i]!.srcStart, `gap at ${i}`);
   }
-  assert.equal(nodes[0]!.start, 0);
-  assert.equal(nodes[nodes.length - 1]!.end, src.length);
+  assert.equal(nodes[0]!.srcStart, 0);
+  assert.equal(nodes[nodes.length - 1]!.srcEnd, src.length);
 });
 
 test('a code span does not terminate the construct that contains it', () => {

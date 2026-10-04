@@ -50,9 +50,13 @@ export interface ListItem {
 //
 // The editor needs to map a caret position in markdown source coordinates onto
 // a parsed node. Without ranges that mapping is guesswork.
+//
+// The fields are named `srcStart`/`srcEnd` rather than `start`/`end` on
+// purpose: block nodes already use `start` for their own meaning (a list's
+// ordinal), and a colliding name would silently overwrite one with the other.
 // ---------------------------------------------------------------------------
 
-export type Ranged<T> = T & { start: number; end: number };
+export type Ranged<T> = T & { srcStart: number; srcEnd: number };
 
 export type RangedInline = Ranged<Inline>;
 export type RangedBlock = Ranged<Block>;

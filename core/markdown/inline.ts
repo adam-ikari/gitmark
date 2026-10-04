@@ -175,7 +175,7 @@ export function parseInlineRange(src: string, srcStart: number, srcEnd: number):
 
   const flush = (end: number) => {
     if (buf.length > 0) {
-      out.push({ type: 'text', value: buf, start: bufStart, end });
+      out.push({ type: 'text', value: buf, srcStart: bufStart, srcEnd: end });
       buf = '';
     }
   };
@@ -184,7 +184,7 @@ export function parseInlineRange(src: string, srcStart: number, srcEnd: number):
 
   const push = (node: Inline, start: number, end: number) => {
     flush(start);
-    out.push({ ...node, start, end } as RangedInline);
+    out.push({ ...node, srcStart: start, srcEnd: end } as RangedInline);
     bufStart = end;
   };
 
@@ -415,11 +415,93 @@ export function parseInline(src: string): Inline[] {
 }
 
 /** Drop the range annotations from one node, leaving a plain AST node. */
-export function stripRange({ start: _s, end: _e, ...rest }: RangedInline): Inline {
+export function stripRange({ srcStart: _s, srcEnd: _e, ...rest }: RangedInline): Inline {
   return rest as Inline;
 }
 
 /** Drop the range annotations from a list of nodes. */
 export function stripRanges(nodes: RangedInline[]): Inline[] {
   return nodes.map(stripRange);
+}
+
+/**
+ * Rewrite every descendant's source range through `map`, recursively.
+ *
+ * `map` exists because the text handed to the scanner is not always a verbatim
+ * slice of the document: a table cell is trimmed and a list item line is
+ * dedented. Scanning such text with absolute offsets indexes past the end of
+ * the buffer, so callers scan with local indices and re-map afterwards.
+ */
+export function remapInline(nodes: RangedInline[], map: (local: number) => number): RangedInline[] {
+  return nodes.map((node) => {
+    const { srcStart, srcEnd, ...rest } = node;
+    const shape = remapShape(rest as unknown as Inline, map);
+    return { ...shape, srcStart: map(srcStart), srcEnd: map(srcEnd) } as RangedInline;
+  });
+}
+
+function remapShape(node: Inline, map: (local: number) => number): Inline {
+  switch (node.type) {
+    case 'strong':
+    case 'em':
+    case 'strike':
+    case 'link':
+      return { ...node, children: remapInline(node.children as RangedInline[], map) } as Inline;
+    default:
+      return node;
+  }
+}
+
+/** Where one source line sits inside a joined buffer, and in the document. */
+export interface LineSeg {
+  /** Offset of this line's text inside the joined buffer. */
+  local: number;
+  /** Absolute document offset of the same character. */
+  abs: number;
+}
+
+/** Translate a local offset in a joined buffer to a document offset. */
+export function localToAbsolute(segs: readonly LineSeg[], local: number): number {
+  if (segs.length === 0) return local;
+  let best = segs[0]!;
+  for (const s of segs) {
+    if (s.local <= local) best = s;
+    else break;
+  }
+  return best.abs + (local - best.local);
+}
+
+/**
+ * Scan `text` with local indices and return nodes whose ranges are expressed in
+ * document coordinates via `segs`.
+ */
+export function inlineMapped(text: string, segs: readonly LineSeg[]): RangedInline[] {
+  return remapInline(parseInlineRange(text, 0, text.length), (l) => localToAbsolute(segs, l));
+}
+
+/**
+ * Convenience for the common case: the scanned text is a contiguous slice of
+ * the document starting at `base`.
+ */
+export function inlineAt(text: string, base: number): RangedInline[] {
+  return remapInline(parseInlineRange(text, 0, text.length), (l) => base + l);
+}
+
+/** Drop range fields recursively, leaving plain AST nodes. */
+export function stripDeep(nodes: RangedInline[]): Inline[] {
+  return nodes.map(stripDeepNode);
+}
+
+function stripDeepNode(node: RangedInline): Inline {
+  const { srcStart: _s, srcEnd: _e, ...rest } = node;
+  const shape = rest as unknown as Inline;
+  switch (shape.type) {
+    case 'strong':
+    case 'em':
+    case 'strike':
+    case 'link':
+      return { ...shape, children: stripDeep(shape.children as RangedInline[]) } as Inline;
+    default:
+      return shape;
+  }
 }
