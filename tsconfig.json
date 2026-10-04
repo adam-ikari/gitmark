@@ -1,0 +1,27 @@
+{
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "types": ["node", "react"],
+    "paths": {
+      "@core/*": [
+        "./core/*"
+      ],
+      "@app/*": [
+        "./app/*"
+      ]
+    },
+    "allowImportingTsExtensions": true
+  },
+  "include": [
+    "**/*.ts",
+    "**/*.tsx"
+  ],
+  "exclude": [
+    "node_modules",
+    ".expo",
+    "android",
+    "ios"
+  ]
+}
