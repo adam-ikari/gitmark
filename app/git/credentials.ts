@@ -12,6 +12,8 @@
  * without ever storing it in a React state, a log line, or an error message.
  */
 
+import { expoFile } from './expoFs.ts';
+
 const TOKEN_KEY = 'mark.git.token';
 
 export interface RepoSettings {
@@ -58,6 +60,12 @@ async function secureStore() {
   return import('expo-secure-store');
 }
 
+/** The document directory, as a `file://` URI. */
+async function documentUri(): Promise<string> {
+  const { Paths } = await import('expo-file-system');
+  return Paths.document.uri;
+}
+
 /**
  * The saved token, or null.
  *
@@ -98,11 +106,7 @@ export async function clearToken(): Promise<void> {
  */
 export async function loadSettings(): Promise<RepoSettings> {
   try {
-    const { File, Paths } = await import('expo-file-system');
-    const file = new File(Paths.document, 'repo.json') as unknown as {
-      exists: boolean;
-      text(): Promise<string>;
-    };
+    const file = await expoFile(`${documentUri()}/repo.json`);
     if (!file.exists) return DEFAULT_SETTINGS;
     const parsed = JSON.parse(await file.text()) as Partial<RepoSettings>;
     // Spread over the defaults so a settings file written by an older build, or
@@ -114,11 +118,7 @@ export async function loadSettings(): Promise<RepoSettings> {
 }
 
 export async function saveSettings(settings: RepoSettings): Promise<void> {
-  const { File, Paths } = await import('expo-file-system');
-  const file = new File(Paths.document, 'repo.json') as unknown as {
-    create(options?: { intermediates?: boolean; overwrite?: boolean }): void;
-    write(content: string): void;
-  };
+  const file = await expoFile(`${documentUri()}/repo.json`);
   file.create({ intermediates: true, overwrite: true });
   file.write(JSON.stringify(settings, null, 2));
 }

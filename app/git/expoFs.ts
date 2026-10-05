@@ -35,9 +35,16 @@ import {
  * The expo-file-system surface this adapter needs.
  *
  * Declared structurally rather than imported so the adapter can be driven by a
- * fake. It cannot be *tested* here — expo modules need a device — but a narrow
- * interface means the mapping logic is inspectable and a fake can at least prove
- * the adapter does not call anything it did not intend to.
+ * fake. The point of declaring it at all is that {@link expoApi} assigns the
+ * *real* `File` and `Directory` to these types with no cast, so `tsc` proves the
+ * adapter only calls methods expo actually has.
+ *
+ * That check is not academic. An earlier version of this file cast the result
+ * with `as unknown as FileLike`, which hid a call to a `modifiedAt()` method
+ * that expo's `File` does not have — the adapter would have thrown a TypeError
+ * inside every `stat()` on a real device, breaking sync entirely, while
+ * typecheck stayed green. The cost of a cast here is the whole reason the
+ * contract can drift unnoticed.
  */
 export interface ExpoFsApi {
   fileOf(localPath: string): FileLike;
@@ -52,8 +59,8 @@ export interface FileLike {
   write(contents: Uint8Array | string): void;
   create(options?: { intermediates?: boolean; overwrite?: boolean }): void;
   delete(): void;
-  /** Modification time in ms since epoch, or null when unavailable. */
-  modifiedAt(): number;
+  /** Metadata; `modificationTime` is in ms since epoch and may be absent. */
+  info(): { modificationTime?: number };
 }
 
 export interface DirectoryLike {
@@ -70,9 +77,13 @@ let cached: ExpoFsApi | null = null;
 async function expoApi(): Promise<ExpoFsApi> {
   if (cached) return cached;
   const { File, Directory } = await import('expo-file-system');
+
+  // No cast on purpose: these assignments are the assertion that the adapter's
+  // assumptions about expo-file-system are true. If a future Expo release
+  // changes the surface, typecheck fails here instead of on a device.
   cached = {
-    fileOf: (p) => new File(toFileUri(p)) as unknown as FileLike,
-    directoryOf: (p) => new Directory(toFileUri(p)) as unknown as DirectoryLike,
+    fileOf: (p) => new File(toFileUri(p)),
+    directoryOf: (p) => new Directory(toFileUri(p)),
   };
   return cached;
 }
@@ -86,6 +97,26 @@ async function expoApi(): Promise<ExpoFsApi> {
 export async function createExpoFs(root: string): Promise<FsLike> {
   const api = await expoApi();
   return createFsFrom(api, rootedAt(root));
+}
+
+/**
+ * The one place expo-file-system is constructed.
+ *
+ * Four modules used to each open their own `File`, which is exactly the hazard
+ * brain/pages/sync-chain-wiring.md warns about: two adapters over one filesystem
+ * produce a sync where one side can see a file and the other cannot. Every
+ * caller goes through here, and returns the real `File` with no cast, so tsc
+ * still proves the surface matches.
+ */
+export async function expoFile(localPath: string): Promise<FileLike> {
+  const { File } = await import('expo-file-system');
+  return new File(toFileUri(localPath));
+}
+
+/** As {@link expoFile}, for directories. */
+export async function expoDirectory(localPath: string): Promise<DirectoryLike> {
+  const { Directory } = await import('expo-file-system');
+  return new Directory(toFileUri(localPath));
 }
 
 /**
@@ -125,7 +156,11 @@ export function createFsFrom(api: ExpoFsApi, resolve: (p: string) => string): Fs
 
     const isDir = !asFile.exists && asDir.exists;
     const size = isDir ? 0 : (asFile.size ?? 0);
-    const mtimeMs = isDir ? 0 : (asFile.modifiedAt() ?? 0);
+    // `info()` rather than a dedicated accessor: expo's File exposes the
+    // modification time there, and `modificationTime` is documented as possibly
+    // absent, so a missing value falls back to 0 rather than NaN — see the
+    // note in core/git/types.ts on why NaN would corrupt the index.
+    const mtimeMs = isDir ? 0 : (asFile.info().modificationTime ?? 0);
 
     return {
       dev: 1,

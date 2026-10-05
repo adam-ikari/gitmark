@@ -98,8 +98,15 @@ export function toLocalPath(input: string): string {
   return (absolute ? '/' : '') + out.join('/');
 }
 
-/** The inverse of {@link toLocalPath}, for handing a path to expo-file-system. */
+/**
+ * The inverse of {@link toLocalPath}, for handing a path to expo-file-system.
+ *
+ * Idempotent, because a caller may legitimately have a URI already — expo hands
+ * out `Paths.document.uri`, and a function that double-prefixed it would produce
+ * `file://file:///…`, which fails at runtime rather than at compile time.
+ */
 export function toFileUri(localPath: string): string {
+  if (localPath.startsWith('file://')) return localPath;
   return localPath.startsWith('/') ? `file://${localPath}` : `file:///${localPath}`;
 }
 

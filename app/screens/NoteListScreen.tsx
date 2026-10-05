@@ -13,6 +13,7 @@ import { View, Text, FlatList, Pressable, StyleSheet, ActivityIndicator } from '
 
 import { toNoteList, sortNotes, conflictCount, type NoteListItem } from './noteIndex.ts';
 import { listNotesUnder } from '../git/gitNotes.ts';
+import { readNote } from '../git/notes.ts';
 import { colors, space, body } from '../theme/tokens.ts';
 
 export type { NoteListItem } from './noteIndex.ts';
@@ -48,18 +49,10 @@ export function NoteListScreen({
     setLoading(true);
     const paths = await listNotesUnder(dir, '');
     const entries = await Promise.all(
-      paths.map(async (path) => {
-        try {
-          const { File } = await import('expo-file-system');
-          const file = new File(`${dir}/${path}`) as unknown as {
-            exists: boolean;
-            text(): Promise<string>;
-          };
-          return [path, file.exists ? await file.text() : null] as [string, string | null];
-        } catch {
-          return [path, null] as [string, string | null];
-        }
-      }),
+      // `readNote` already returns null for a file that is absent or unreadable,
+      // and already adds the `file://` scheme — which this screen used to omit,
+      // handing expo a bare POSIX path.
+      paths.map(async (path) => [path, await readNote(dir, path)] as [string, string | null]),
     );
     setItems(sortNotes(toNoteList(entries)));
     setLoading(false);

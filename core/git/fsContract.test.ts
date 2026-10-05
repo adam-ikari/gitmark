@@ -72,6 +72,14 @@ test('toFileUri undoes toLocalPath', () => {
   assert.equal(toLocalPath(toFileUri(local)), local);
 });
 
+test('toFileUri leaves an existing URI alone', () => {
+  // expo hands out `Paths.document.uri`, so a caller can legitimately arrive
+  // holding a URI. Double-prefixing it would only fail at runtime.
+  const uri = 'file:///data/user/0/app/files';
+  assert.equal(toFileUri(uri), uri);
+  assert.equal(toFileUri(toFileUri(uri)), uri);
+});
+
 // ---------------------------------------------------------------------------
 // codedError
 // ---------------------------------------------------------------------------

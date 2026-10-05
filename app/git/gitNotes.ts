@@ -15,10 +15,12 @@
  * device to pull inherits those markers.
  */
 
-import { readAtRef, listNotesAtRef, type TriVersion } from '../../core/git/store.ts';
+import { readAtRef, listNotesAtRef, type NoteStore, type TriVersion } from '../../core/git/store.ts';
 import { applyPlan, planSync, type SyncPlan, type SyncPhase } from '../../core/git/sync.ts';
-import { toFileUri, type GitOptions } from '../../core/git/types.ts';
+import type { GitOptions } from '../../core/git/types.ts';
 import { bodyOf } from '../../core/note/frontmatter.ts';
+import { expoDirectory } from './expoFs.ts';
+import { readNote, writeNote, deleteNote, noteExists } from './notes.ts';
 
 export interface Author {
   name: string;
@@ -220,7 +222,7 @@ export class GitNotes {
   private async readWorkingTree(paths: string[]): Promise<Map<string, string | null>> {
     const out = new Map<string, string | null>();
     for (const path of paths) {
-      out.set(path, await readNoteFile(`${this.opts.dir}/${path}`));
+      out.set(path, await readNote(this.opts.dir, path));
     }
     return out;
   }
@@ -278,64 +280,23 @@ export class GitNotes {
 /**
  * The filesystem operations the sync engine needs, over expo-file-system.
  *
- * Goes through the same adapter isomorphic-git uses, so the working tree and
- * `.git` are read by one set of rules. Two adapters over one filesystem is how
- * a sync ends up comparing a file that one side can see and the other cannot.
+ * Delegates to app/git/notes.ts, which is the single place that touches the
+ * device filesystem. This file used to open its own `File` — and passed a bare
+ * POSIX path to a constructor that wants a `file://` URI, behind a cast that
+ * stopped `tsc` from saying so. Two adapters over one filesystem is how a sync
+ * ends up comparing a file one side can see and the other cannot; see
+ * brain/pages/sync-chain-wiring.md.
  *
- * `create({ intermediates: true })` is what lets a merge write the first note
- * into a folder that does not exist yet.
+ * `create({ intermediates: true })`, inside writeNote, is what lets a merge
+ * write the first note into a folder that does not exist yet.
  */
 
-interface FileHandleLike {
-  exists: boolean;
-  text(): Promise<string>;
-  write(content: string): void;
-  create(options?: { intermediates?: boolean; overwrite?: boolean }): void;
-  delete(): void;
-}
-
-async function openFile(uri: string): Promise<FileHandleLike> {
-  const { File } = await import('expo-file-system');
-  return new File(uri) as unknown as FileHandleLike;
-}
-
-async function readNoteFile(uri: string): Promise<string | null> {
-  try {
-    const file = await openFile(uri);
-    if (!file.exists) return null;
-    return await file.text();
-  } catch {
-    return null;
-  }
-}
-
-function storeFromFs(opts: GitOptions) {
+function storeFromFs(opts: GitOptions): NoteStore {
   return {
-    async read(path: string) {
-      return readNoteFile(`${opts.dir}/${path}`);
-    },
-    async write(path: string, content: string) {
-      const file = await openFile(`${opts.dir}/${path}`);
-      // `intermediates` covers the case where a merge creates a note in a folder
-      // that does not exist yet.
-      file.create({ intermediates: true, overwrite: true });
-      file.write(content);
-    },
-    async remove(path: string) {
-      try {
-        const file = await openFile(`${opts.dir}/${path}`);
-        if (file.exists) file.delete();
-      } catch {
-        /* already gone */
-      }
-    },
-    async exists(path: string) {
-      try {
-        return (await openFile(`${opts.dir}/${path}`)).exists;
-      } catch {
-        return false;
-      }
-    },
+    read: (path) => readNote(opts.dir, path),
+    write: (path, content) => writeNote(opts.dir, path, content),
+    remove: (path) => deleteNote(opts.dir, path),
+    exists: (path) => noteExists(opts.dir, path),
     /**
      * Note paths under the working tree.
      *
@@ -343,28 +304,20 @@ function storeFromFs(opts: GitOptions) {
      * anything else starting with a dot: those are git's own files, and walking
      * them would be both slow and wrong to treat as notes.
      */
-    async list() {
-      return listNotesUnder(opts.dir, '');
-    },
+    list: () => listNotesUnder(opts.dir, ''),
   };
 }
 
 /**
  * Depth-first walk yielding repo-relative `.md` paths.
  *
- * `dir` is a POSIX path; the `file://` scheme is added here, at the expo
+ * `dir` is a POSIX path; `expoDirectory` adds the `file://` scheme at the
  * boundary, for the same reason isomorphic-git never sees one.
  */
 export async function listNotesUnder(dir: string, prefix: string): Promise<string[]> {
-  const { Directory } = await import('expo-file-system');
-  const absolute = toFileUri(`${dir}/${prefix}`.replace(/\/+/g, '/'));
-
   let entries: Array<{ name: string }>;
   try {
-    const directory = new Directory(absolute) as unknown as {
-      exists: boolean;
-      list(): Array<{ name: string }>;
-    };
+    const directory = await expoDirectory(`${dir}/${prefix}`.replace(/\/+/g, '/'));
     if (!directory.exists) return [];
     entries = directory.list();
   } catch {

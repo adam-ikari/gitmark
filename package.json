@@ -33,5 +33,6 @@
     "test:core": "node --test \"core/**/*.test.ts\""
   },
   "private": true,
-  "type": "module"
+  "type": "module",
+  "packageManager": "pnpm@10.33.2"
 }

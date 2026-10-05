@@ -50,8 +50,11 @@ export class FakeExpoFs implements ExpoFsApi {
       delete() {
         fs.files.delete(localPath);
       },
-      modifiedAt() {
-        return fs.mtimes.get(localPath) ?? 0;
+      // Shaped like expo's `info()`, including the possibility of an absent
+      // modificationTime — the fake should not be more forgiving than the real
+      // thing, or it will not catch an adapter that assumes otherwise.
+      info() {
+        return { modificationTime: fs.mtimes.get(localPath) };
       },
     };
   }

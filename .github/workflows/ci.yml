@@ -1,0 +1,87 @@
+# Verify every commit.
+#
+# The interesting property of this repository is that almost all of its logic is
+# plain TypeScript with no React Native runtime, so it is testable in Node
+# directly — which is what makes a CI run worth having at all. The tests are not
+# a formality here: the merge engine, the markdown parser, the richtext splices
+# and the git adapter's contract are all covered by tests that run in under a
+# second, and the merge engine additionally agrees with an independent reference
+# implementation.
+#
+# What CI cannot do here is run the app. There is no Android device or emulator
+# available (this repository's host has no /dev/kvm), so the editor's on-device
+# alignment and the git adapter's behaviour against real expo-file-system remain
+# unverified by anything automated. The bundle step below is the closest
+# available proxy: it exercises Metro's module graph and catches a bad import or
+# a missing native module, which is the failure class that actually bites.
+#
+# Node 24 specifically, not `lts/*`: the tests are `.ts` files run by `node
+# --test` with type stripping, which needs Node >= 22.18. Pinning the exact
+# major keeps a toolchain bump from turning into an unexplained red build.
+
+name: CI
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+  # Lets a run be retried from the Actions tab without pushing a commit.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# One run per ref; a newer push makes an in-flight run irrelevant.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Before setup-node, because that step's pnpm cache needs pnpm present.
+      # The version comes from `packageManager` in package.json, so there is one
+      # place to change it rather than two that can disagree.
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      # `--frozen-lockfile` fails if pnpm-lock.yaml disagrees with package.json,
+      # which is the check that stops a dependency change landing without its
+      # lockfile entry.
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Test
+        run: pnpm test
+
+      # Separate from the test run so a divergence from the reference `diff3`
+      # engine is named in the job log rather than hidden among 500 passing
+      # assertions. It is included in `pnpm test` as well; running it again
+      # alone is about legibility, not coverage.
+      - name: Differential merge test
+        run: pnpm differential
+
+      - name: Build the Android bundle
+        run: npx expo export --platform android --output-dir .expo-export
+
+      # Kept so a bundle failure on someone else's machine can be inspected
+      # without reproducing it. The Hermes bytecode is small enough to be worth
+      # carrying and awkward to regenerate by hand.
+      - name: Upload the bundle
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-bundle
+          path: .expo-export
+          retention-days: 7
+          if-no-files-found: ignore
