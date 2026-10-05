@@ -5,7 +5,7 @@ category: decision
 status: active
 tags: [純 JS, 無原生 git 依賴]
 created: "2026-10-04T13:39:43"
-updated: "2026-10-04T16:43:53"
+updated: "2026-10-05T09:21:57"
 ---
 
 <!-- compiled_truth -->
@@ -63,3 +63,9 @@ updated: "2026-10-04T16:43:53"
   summary: "Verified against real GitHub: file:// is unsupported, and the transport body must be an AsyncIterator of Uint8Array"
   source: probe 2026-10-04
   affects: [github-pat-git-transport]
+
+- time: 2026-10-05T09:21:57
+  kind: reversal
+  summary: "Replaced the personal access token with GitHub App sign-in (authorization code + PKCE); the PAT field is gone. Chose the App over an OAuth App because the narrow grant matches the minimal-permission principle already recorded here"
+  source: "core/github/auth.ts, app/github/signIn.ts 2026-10-05"
+  affects: [github-pat-git-transport, github-app-account-auth]

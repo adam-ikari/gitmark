@@ -173,7 +173,7 @@ test('single trailing space is a softbreak, not a hardbreak', () => {
 });
 
 test('CJK text is not mangled', () => {
-  assert.equal(p('這是**粗體**中文'), 'text("這是") strong[text("粗體")] text("中文")');
+  assert.equal(p('这是**粗体**中文'), 'text("这是") strong[text("粗体")] text("中文")');
 });
 
 test('source ranges point at the construct', () => {

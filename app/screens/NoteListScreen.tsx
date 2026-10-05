@@ -78,7 +78,7 @@ export function NoteListScreen({
         <Text style={styles.title}>mark</Text>
         <View style={styles.headRight}>
           {conflicts > 0 && (
-            <Text style={styles.conflictCount}>{conflicts} 個衝突</Text>
+            <Text style={styles.conflictCount}>{conflicts} 个冲突</Text>
           )}
           <Pressable
             onPress={onSync}
@@ -98,8 +98,8 @@ export function NoteListScreen({
         contentContainerStyle={items.length === 0 ? styles.emptyWrap : styles.list}
         ListEmptyComponent={
           <View style={styles.empty}>
-            <Text style={styles.emptyTitle}>還沒有筆記</Text>
-            <Text style={styles.emptyHint}>在「編輯」分頁建立第一篇。</Text>
+            <Text style={styles.emptyTitle}>还没有笔记</Text>
+            <Text style={styles.emptyHint}>在「编辑」分页建立第一篇。</Text>
           </View>
         }
         renderItem={({ item }) => (
@@ -112,7 +112,7 @@ export function NoteListScreen({
             </Text>
             <Text style={styles.rowPath} numberOfLines={1}>
               {item.path}
-              {item.conflicted ? ' · 有衝突' : ''}
+              {item.conflicted ? ' · 有冲突' : ''}
             </Text>
           </Pressable>
         )}

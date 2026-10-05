@@ -90,7 +90,7 @@ test('init creates a repository with the requested default branch', async () => 
 test('a full commit cycle works, and the blob round-trips', async () => {
   const git = await isomorphicGit();
   const { fs, fake } = setup();
-  const content = '# 筆記\n\n第一段。\n';
+  const content = '# 笔记\n\n第一段。\n';
 
   await git.init({ fs, dir: ROOT, defaultBranch: 'main' });
   seedFile(fake, `${ROOT}/note.md`, content);

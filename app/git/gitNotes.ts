@@ -183,7 +183,7 @@ export class GitNotes {
         pushed: false,
         baseOid,
         remoteOid,
-        message: `${plan.conflicts.length} 個檔案有衝突，已停止同步`,
+        message: `${plan.conflicts.length} 个档案有冲突，已停止同步`,
       };
     }
 
@@ -212,7 +212,7 @@ export class GitNotes {
         pushed: false,
         baseOid,
         remoteOid,
-        message: committed ? '已合併，但推送失敗，下次同步會重試' : '推送失敗',
+        message: committed ? '已合并，但推送失败，下次同步会重试' : '推送失败',
       };
     }
 

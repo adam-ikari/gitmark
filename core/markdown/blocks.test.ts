@@ -183,7 +183,7 @@ test('a blank line separates a list from following text', () => {
 });
 
 test('CJK prose parses as a single paragraph', () => {
-  assert.deepEqual(types('這是第一段\n還是同一段\n\n這是第二段'), ['paragraph', 'paragraph']);
+  assert.deepEqual(types('这是第一段\n还是同一段\n\n这是第二段'), ['paragraph', 'paragraph']);
 });
 
 test('block ranges are ordered and non-overlapping', () => {

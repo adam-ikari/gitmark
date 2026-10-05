@@ -95,7 +95,7 @@ export function SvgView({ source, height = 200, onUnsupported }: SvgViewProps): 
   if (parsed.error || !parsed.doc) {
     return (
       <View style={[style.wrap, style.fallback]}>
-        <Text style={style.fallbackTitle}>SVG 無法解析</Text>
+        <Text style={style.fallbackTitle}>SVG 无法解析</Text>
         <Text style={style.fallbackBody}>{parsed.error?.message ?? 'unknown error'}</Text>
       </View>
     );

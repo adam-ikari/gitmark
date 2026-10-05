@@ -16,8 +16,8 @@ import { colors, space, body } from './app/theme/tokens.ts';
 type Tab = 'notes' | 'edit' | 'read';
 
 const TABS: Array<{ key: Tab; label: string }> = [
-  { key: 'notes', label: '筆記' },
-  { key: 'edit', label: '編輯' },
+  { key: 'notes', label: '笔记' },
+  { key: 'edit', label: '编辑' },
   { key: 'read', label: '渲染' },
 ];
 
@@ -41,16 +41,22 @@ export default function App(): React.JSX.Element {
     void (async () => {
       try {
         const { Paths } = await import('expo-file-system');
-        const { loadSettings, loadToken } = await import('./app/git/credentials.ts');
-        const settings = await loadSettings();
-        const token = await loadToken();
+        const { loadSettings } = await import('./app/git/credentials.ts');
+        const { getStoredSession } = await import('./app/github/store.ts');
+        const { sessionForSync } = await import('./app/github/signIn.ts');
 
-        if (!isConfigured(settings, token)) {
+        const [settings, session] = await Promise.all([loadSettings(), getStoredSession()]);
+
+        // `isConfigured` wants the token itself; the session holds it, and
+        // everything else about the session stays inside the auth module.
+        if (!isConfigured(settings, session.accessToken)) {
           if (live) setReady(true);
           return;
         }
 
-        const ws = await openWorkspace(toLocalDir(Paths.document.uri));
+        const ws = await openWorkspace(toLocalDir(Paths.document.uri), {
+          accessToken: async () => (await sessionForSync()).accessToken,
+        });
         if (!live) return;
         const c = new SyncController(ws.notes);
         setWorkspace(ws);
@@ -67,7 +73,7 @@ export default function App(): React.JSX.Element {
   }, []);
 
   const onConnected = useCallback(() => {
-    // Reload from scratch rather than patching state: a fresh token may point at
+    // Reload from scratch rather than patching state: a fresh session may point at
     // a different remote, and the controller holds the transport.
     setReady(false);
     setWorkspace(null);
@@ -75,7 +81,10 @@ export default function App(): React.JSX.Element {
     setSync(IDLE_STATE);
     void (async () => {
       const { Paths } = await import('expo-file-system');
-      const ws = await openWorkspace(toLocalDir(Paths.document.uri));
+      const { sessionForSync } = await import('./app/github/signIn.ts');
+      const ws = await openWorkspace(toLocalDir(Paths.document.uri), {
+        accessToken: async () => (await sessionForSync()).accessToken,
+      });
       const c = new SyncController(ws.notes);
       setWorkspace(ws);
       setController(c);
@@ -111,7 +120,7 @@ export default function App(): React.JSX.Element {
       setProblem(null);
       const text = await readNote(workspace.dir, item.path);
       if (text === null) {
-        setProblem(`讀不到 ${item.path}`);
+        setProblem(`读不到 ${item.path}`);
         return;
       }
       setConflictPath(item.path);
@@ -134,7 +143,7 @@ export default function App(): React.JSX.Element {
         // A resolved note is local work that the remote does not have yet.
         setProblem(null);
       } catch (err) {
-        setProblem(err instanceof Error ? `無法儲存：${err.message}` : '無法儲存');
+        setProblem(err instanceof Error ? `无法储存：${err.message}` : '无法储存');
       }
     },
     [workspace, conflictPath],
@@ -149,7 +158,7 @@ export default function App(): React.JSX.Element {
   if (!ready) {
     return (
       <View style={styles.center}>
-        <Text style={styles.meta}>載入中…</Text>
+        <Text style={styles.meta}>载入中…</Text>
       </View>
     );
   }

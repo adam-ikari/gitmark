@@ -1,20 +1,18 @@
 /**
- * Credentials and settings.
+ * Repository settings.
  *
- * The token lives in the OS keystore and nothing else. The rule from
- * brain/pages/github-pat-git-transport.md is not "avoid logging the token" —
- * it is that the token never touches the filesystem, because the filesystem is
- * the thing git tracks. A token written next to `.git/config` gets committed,
- * and a committed token is a leaked token.
+ * Sign-in moved to app/github/. What remains here is not secret and has no
+ * business in the keystore: the remote, the commit author, the branch. Keeping
+ * them apart is what makes "is the user signed in?" a question with one obvious
+ * answer.
  *
- * So this module is the only place that reads or writes a credential, and it
- * returns the token to a caller that hands it straight to the HTTP client
- * without ever storing it in a React state, a log line, or an error message.
+ * The token — and now the refresh token too — lives in app/github/store.ts and
+ * nowhere else. brain/pages/github-pat-git-transport.md: the filesystem is the
+ * thing git tracks, so a credential written beside `.git/config` eventually gets
+ * committed, and a committed credential is a leaked one.
  */
 
 import { expoFile } from './expoFs.ts';
-
-const TOKEN_KEY = 'mark.git.token';
 
 export interface RepoSettings {
   /** The remote, e.g. `https://github.com/owner/repo.git`. */
@@ -42,22 +40,18 @@ export const DEFAULT_SETTINGS: RepoSettings = {
  */
 export function validateRemote(remote: string): string | null {
   const url = remote.trim();
-  if (url === '') return '請填寫遠端仓库網址';
-  if (url.startsWith('file://')) return '不支援本機路徑作為遠端，請使用 GitHub 網址';
-  if (!/^https?:\/\//.test(url)) return '請使用 https:// 開頭的網址';
-  if (/\s/.test(url)) return '網址不能包含空格';
+  if (url === '') return '请填写远端仓库网址';
+  if (url.startsWith('file://')) return '不支持本机路径作为远端，请使用 GitHub 网址';
+  if (!/^https?:\/\//.test(url)) return '请使用 https:// 开头的网址';
+  if (/\s/.test(url)) return '网址不能包含空格';
   return null;
 }
 
 /** Reject an author git would refuse, before a commit fails opaquely. */
 export function validateAuthor(name: string, email: string): string | null {
-  if (name.trim() === '') return '請填寫作者名稱';
-  if (!/^[^@\s]+@[^@\s]+$/.test(email.trim())) return '請填寫有效的 email';
+  if (name.trim() === '') return '请填写作者名称';
+  if (!/^[^@\s]+@[^@\s]+$/.test(email.trim())) return '请填写有效的 email';
   return null;
-}
-
-async function secureStore() {
-  return import('expo-secure-store');
 }
 
 /** The document directory, as a `file://` URI. */
@@ -66,44 +60,6 @@ async function documentUri(): Promise<string> {
   return Paths.document.uri;
 }
 
-/**
- * The saved token, or null.
- *
- * Returns null rather than throwing when the keystore is unavailable, because a
- * device without a secure enclave should still let someone edit notes offline —
- * it just cannot sync.
- */
-export async function loadToken(): Promise<string | null> {
-  try {
-    const { getItemAsync, isAvailableAsync } = await secureStore();
-    if (!(await isAvailableAsync())) return null;
-    return await getItemAsync(TOKEN_KEY);
-  } catch {
-    return null;
-  }
-}
-
-export async function saveToken(token: string): Promise<void> {
-  const { setItemAsync } = await secureStore();
-  await setItemAsync(TOKEN_KEY, token.trim());
-}
-
-export async function clearToken(): Promise<void> {
-  try {
-    const { deleteItemAsync, isAvailableAsync } = await secureStore();
-    if (!(await isAvailableAsync())) return;
-    await deleteItemAsync(TOKEN_KEY);
-  } catch {
-    /* nothing stored */
-  }
-}
-
-/**
- * Repo settings, stored as a plain JSON file.
- *
- * Deliberately *not* in the keystore: none of this is secret, and putting it
- * there would make "is a token configured?" ambiguous.
- */
 export async function loadSettings(): Promise<RepoSettings> {
   try {
     const file = await expoFile(`${documentUri()}/repo.json`);
@@ -123,7 +79,32 @@ export async function saveSettings(settings: RepoSettings): Promise<void> {
   file.write(JSON.stringify(settings, null, 2));
 }
 
-/** Whether a sync could possibly succeed: a remote, an author, and a token. */
-export function isConfigured(settings: RepoSettings, token: string | null): boolean {
-  return settings.remote !== '' && settings.authorName !== '' && settings.authorEmail !== '' && Boolean(token);
+/**
+ * The `owner/name` a remote points at, or null.
+ *
+ * Needed to tell the user the most likely reason a push fails: the App is
+ * installed on their account but not on the repository they typed.
+ */
+export function repoFromRemote(remote: string): string | null {
+  const match = /^https?:\/\/[^/]+\/([^/]+)\/([^/]+?)(?:\.git)?\/?$/.exec(remote.trim());
+  if (!match) return null;
+  return `${match[1]}/${match[2]}`;
+}
+
+/**
+ * Whether a sync could possibly succeed.
+ *
+ * A repository and an author are needed for a commit; a session is needed for the
+ * network. Signature is over the session's token rather than the session itself,
+ * so this stays a pure function of what a caller can see without importing the
+ * keystore.
+ */
+export function isConfigured(settings: RepoSettings, accessToken: string | null): boolean {
+  return (
+    settings.remote !== '' &&
+    settings.authorName !== '' &&
+    settings.authorEmail !== '' &&
+    typeof accessToken === 'string' &&
+    accessToken !== ''
+  );
 }

@@ -146,10 +146,10 @@ export function touchedPaths(plan: SyncPlan): string[] {
 export function describePlan(plan: SyncPlan): string {
   if (plan.conflicts.length > 0) {
     const n = plan.conflicts.length;
-    return `${n} 個檔案有衝突，需要手動處理`;
+    return `${n} 个档案有冲突，需要手动处理`;
   }
   const parts: string[] = [];
-  if (plan.writes.length > 0) parts.push(`${plan.writes.length} 個檔案已合併`);
-  if (plan.deletes.length > 0) parts.push(`${plan.deletes.length} 個檔案已刪除`);
+  if (plan.writes.length > 0) parts.push(`${plan.writes.length} 个档案已合并`);
+  if (plan.deletes.length > 0) parts.push(`${plan.deletes.length} 个档案已删除`);
   return parts.length > 0 ? parts.join('，') : '已是最新';
 }

@@ -25,7 +25,7 @@ test('the styled layer and the input must hold identical text', () => {
     '**bold** and *italic*',
     '# heading with `code`',
     '- item with [link](/x)',
-    'CJK 粗體 and English bold **together**',
+    'CJK 粗体 and English bold **together**',
     '~~struck~~ and ``` inline',
   ]) {
     const rendered = toSegments(src)

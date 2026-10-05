@@ -249,7 +249,7 @@ function InlineNode({
       if (!/^(https?|file|data):/.test(uri)) {
         // A relative path with no resolver means the image is not available
         // here; say so rather than showing a broken glyph.
-        return <Text style={style.missingImage}>[圖片: {node.alt || node.src}]</Text>;
+        return <Text style={style.missingImage}>[图片: {node.alt || node.src}]</Text>;
       }
       return <Image source={{ uri }} style={style.image} accessibilityLabel={node.alt} />;
     }

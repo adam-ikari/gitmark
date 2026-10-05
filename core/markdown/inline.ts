@@ -122,8 +122,8 @@ function isRightFlanking(text: string, runStart: number, runLen: number): boolea
  * So `*` and `~` need nothing beyond left-flanking, while `_` additionally
  * requires (not right-flanking OR preceded by punctuation). That guard is what
  * keeps `snake_case_name` intact — which matters in technical notes, where
- * snake_case identifiers are everywhere. It also means `中文__粗體__` stays
- * literal while `中文**粗體**` renders bold, exactly as both references do.
+ * snake_case identifiers are everywhere. It also means `中文__粗体__` stays
+ * literal while `中文**粗体**` renders bold, exactly as both references do.
  */
 function canOpenEmphasis(src: string, runStart: number, runLen: number): boolean {
   const c = src[runStart]!;

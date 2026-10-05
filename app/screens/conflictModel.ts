@@ -9,7 +9,7 @@
  *   tap, because each rewrite renumbers every region after the resolved one and
  *   silently shifts the remaining choices onto the wrong text.
  * - **Manual editing is a peer of the two buttons,** not a fallback. Picking
- *   "手動編輯" hands the whole note to the editor with the snapshot on it, and
+ *   "手动编辑" hands the whole note to the editor with the snapshot on it, and
  *   the resolution screen re-derives its state from whatever the editor
  *   produced. That is what makes the third option real rather than a label.
  */

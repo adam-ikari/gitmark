@@ -140,7 +140,7 @@ test('a failed push is not reported as up to date', async () => {
   const controller = new SyncController(fakeNotes(() => outcome({ pushed: false, committed: true })));
   const { state } = await controller.sync();
   assert.equal(state.phase, 'failed');
-  assert.match(state.message ?? '', /推送|上傳/);
+  assert.match(state.message ?? '', /推送|上传/);
 });
 
 test('a thrown error becomes a failed phase, not a crash', async () => {
@@ -218,7 +218,7 @@ test('a plan summary reaches the status bar', async () => {
     ),
   );
   const { state } = await controller.sync();
-  assert.match(state.message ?? '', /合併/);
+  assert.match(state.message ?? '', /合并/);
 });
 
 test('an unchanged tree says so rather than staying silent', async () => {

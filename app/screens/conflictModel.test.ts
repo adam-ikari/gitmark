@@ -152,7 +152,7 @@ test('mixed choices keep every region’s own answer', () => {
 // ---------------------------------------------------------------------------
 
 test('the commit gate refuses text with markers', () => {
-  assert.throws(() => assertCommitReady(twoConflicts()), /衝突/);
+  assert.throws(() => assertCommitReady(twoConflicts()), /冲突/);
 });
 
 test('the commit gate accepts a fully resolved note', () => {
@@ -194,13 +194,13 @@ test('no step is preselected', () => {
 // ---------------------------------------------------------------------------
 
 test('an untouched conflict says how many are waiting', () => {
-  assert.equal(summary(startSession(twoConflicts())), '2 個衝突待選擇');
+  assert.equal(summary(startSession(twoConflicts())), '2 个冲突待选择');
 });
 
 test('a partial resolution reports progress', () => {
-  assert.equal(summary(decide(startSession(twoConflicts()), 0, 'local')), '1/2 個衝突已選擇');
+  assert.equal(summary(decide(startSession(twoConflicts()), 0, 'local')), '1/2 个冲突已选择');
 });
 
 test('a clean note has nothing to report', () => {
-  assert.equal(summary(startSession('# clean')), '沒有衝突');
+  assert.equal(summary(startSession('# clean')), '没有冲突');
 });

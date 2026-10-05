@@ -2,7 +2,7 @@
  * Resolving conflict regions one at a time.
  *
  * brain/pages/safe-auto-merge.md requires that a real conflict be resolved by
- * "三選一或手動編輯" — never a two-way choice with a "discard my changes"
+ * "三选一或手动编辑" — never a two-way choice with a "discard my changes"
  * default. This module is the three-way part: for each region the user picks
  * their own side, the other side, or edits it by hand in the editor.
  *
@@ -211,9 +211,9 @@ export function describeResolution(
   decisions: Readonly<Record<number, Resolution>>,
 ): string {
   const total = findRegions(text).length;
-  if (total === 0) return '沒有衝突';
+  if (total === 0) return '没有冲突';
   const done = total - unresolvedIndices(text, decisions).length;
-  return done === 0 ? `${total} 個衝突待選擇` : `${done}/${total} 個衝突已選擇`;
+  return done === 0 ? `${total} 个冲突待选择` : `${done}/${total} 个冲突已选择`;
 }
 
 /**
@@ -232,10 +232,10 @@ export function describeResolution(
 export function assertResolved(text: string): void {
   const regions = findRegions(text);
   if (regions.length > 0) {
-    throw new Error(`仍有 ${regions.length} 個衝突未解決`);
+    throw new Error(`仍有 ${regions.length} 个冲突未解决`);
   }
   if (hasUnresolvedConflict(text)) {
-    throw new Error(`檔案仍有 ${countConflicts(text)} 個衝突標記`);
+    throw new Error(`档案仍有 ${countConflicts(text)} 个冲突标记`);
   }
 }
 

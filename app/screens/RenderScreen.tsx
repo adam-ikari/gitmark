@@ -111,7 +111,7 @@ export function RenderScreen(): React.JSX.Element {
         {(unresolved || mermaidError) && (
           <View style={style.warn}>
             <Text style={style.warnText}>
-              {unresolved ? `svg 略過: ${unresolved}` : null}
+              {unresolved ? `svg 略过: ${unresolved}` : null}
               {unresolved && mermaidError ? '\n' : null}
               {mermaidError ? `mermaid: ${mermaidError}` : null}
             </Text>

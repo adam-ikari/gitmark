@@ -13,7 +13,7 @@ import assert from 'node:assert/strict';
 import { validateRemote, validateAuthor, isConfigured, DEFAULT_SETTINGS } from './credentials.ts';
 
 test('an empty remote is rejected', () => {
-  assert.match(validateRemote('') ?? '', /遠端/);
+  assert.match(validateRemote('') ?? '', /远端/);
 });
 
 test('a whitespace-only remote is rejected', () => {
@@ -23,10 +23,10 @@ test('a whitespace-only remote is rejected', () => {
 // Verified against isomorphic-git 1.43.0: file:// is not a transport it
 // implements, and the failure surfaces as UnknownTransportError from a fetch.
 test('a file:// remote is rejected with the reason', () => {
-  assert.match(validateRemote('file:///tmp/notes') ?? '', /不支援本機路徑/);
+  assert.match(validateRemote('file:///tmp/notes') ?? '', /不支持本机路径/);
 });
 
-test('an ssh remote is rejected, since the decision is HTTP plus PAT', () => {
+test('an ssh remote is rejected, since the decision is HTTP plus a GitHub App token', () => {
   assert.ok(validateRemote('git@github.com:owner/repo.git'));
 });
 
@@ -52,7 +52,7 @@ test('a plain http remote is accepted for self-hosted servers', () => {
 });
 
 test('an author without a name is rejected', () => {
-  assert.match(validateAuthor('', 'a@b.co') ?? '', /作者名稱/);
+  assert.match(validateAuthor('', 'a@b.co') ?? '', /作者名称/);
 });
 
 test('an author with a malformed email is rejected', () => {
@@ -67,7 +67,7 @@ test('a complete author is accepted', () => {
 
 test('a sync needs a remote, an author and a token', () => {
   const full = { ...DEFAULT_SETTINGS, remote: 'https://x/y.git', authorName: 'Me', authorEmail: 'me@x.co' };
-  assert.equal(isConfigured(full, 'ghp_token'), true);
+  assert.equal(isConfigured(full, 'ghu_token'), true);
   assert.equal(isConfigured(full, null), false);
   assert.equal(isConfigured({ ...full, remote: '' }, 'ghp_token'), false);
   assert.equal(isConfigured({ ...full, authorName: '' }, 'ghp_token'), false);

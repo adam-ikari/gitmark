@@ -41,7 +41,7 @@ test('segments reproduce the input exactly', () => {
     'mixed **bold with *nested* inside** end',
     '**a `b` c**',
     'unmatched ** marker',
-    '中文**粗體**中文',
+    '中文**粗体**中文',
     '`a `` b`',
     'trailing **',
   ]) {
@@ -152,9 +152,9 @@ test('unmatched markers survive as literal text', () => {
 });
 
 test('CJK text with bold is segmented', () => {
-  assertLossless('這是**粗體**中文');
-  const s = seg('這是**粗體**中文');
-  assert.equal(s.find((x) => x.text === '粗體')?.bold, true);
+  assertLossless('这是**粗体**中文');
+  const s = seg('这是**粗体**中文');
+  assert.equal(s.find((x) => x.text === '粗体')?.bold, true);
 });
 
 test('a hard break keeps its trailing spaces so widths match', () => {

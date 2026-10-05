@@ -80,15 +80,15 @@ function defaultLabel(phase: SyncPhase, conflicts: number): string {
     case 'fetching':
       return '抓取中…';
     case 'merging':
-      return '合併中…';
+      return '合并中…';
     case 'pushing':
       return '推送中…';
     case 'conflicted':
-      return `${conflicts} 個衝突待處理`;
+      return `${conflicts} 个冲突待处理`;
     case 'failed':
-      return '同步失敗';
+      return '同步失败';
     default:
-      return conflicts > 0 ? `${conflicts} 個衝突待處理` : '已是最新';
+      return conflicts > 0 ? `${conflicts} 个冲突待处理` : '已是最新';
   }
 }
 

@@ -12,7 +12,7 @@
  * its markers and renumbers every region after it — rewriting per tap would slide
  * the remaining choices onto the wrong text. See app/screens/conflictModel.ts.
  *
- * "完成並儲存" stays disabled until every region is answered, and a region whose
+ * "完成并储存" stays disabled until every region is answered, and a region whose
  * markers never closed offers only manual editing, since there is no delimited
  * other side to choose.
  */
@@ -65,7 +65,7 @@ export function ConflictScreen({
   const save = useCallback(() => {
     const resolved = resolvedText(session);
     if (resolved === null) {
-      setProblem('仍有衝突未選擇');
+      setProblem('仍有冲突未选择');
       return;
     }
     try {
@@ -73,7 +73,7 @@ export function ConflictScreen({
       // reach a commit: the next device to pull would inherit them.
       assertCommitReady(resolved);
     } catch (err) {
-      setProblem(err instanceof Error ? err.message : '無法儲存');
+      setProblem(err instanceof Error ? err.message : '无法储存');
       return;
     }
     onSave(resolved);
@@ -83,7 +83,7 @@ export function ConflictScreen({
     <View style={styles.root}>
       <View style={styles.head}>
         <View style={styles.headText}>
-          <Text style={styles.title}>解決衝突</Text>
+          <Text style={styles.title}>解决冲突</Text>
           <Text style={styles.path} numberOfLines={1}>
             {path}
           </Text>
@@ -98,8 +98,8 @@ export function ConflictScreen({
           return (
             <View key={region.index} style={styles.region}>
               <Text style={styles.regionHead}>
-                衝突 {region.index + 1}
-                {malformed ? ' · 標記不完整，需手動修正' : ''}
+                冲突 {region.index + 1}
+                {malformed ? ' · 标记不完整，需手动修正' : ''}
               </Text>
 
               <Side
@@ -110,7 +110,7 @@ export function ConflictScreen({
                 enabled={!malformed}
               />
               <Side
-                title="對方的版本"
+                title="对方的版本"
                 lines={region.remote}
                 selected={chosen === 'remote'}
                 onPress={() => setSession((s) => decide(s, region.index, 'remote'))}
@@ -121,9 +121,9 @@ export function ConflictScreen({
                 onPress={() => onEditManually(text)}
                 style={({ pressed }) => [styles.manual, pressed && styles.pressed]}
                 accessibilityRole="button"
-                accessibilityLabel={`手動編輯第 ${region.index + 1} 個衝突`}
+                accessibilityLabel={`手动编辑第 ${region.index + 1} 个冲突`}
               >
-                <Text style={styles.manualText}>手動編輯整篇</Text>
+                <Text style={styles.manualText}>手动编辑整篇</Text>
               </Pressable>
 
               {chosen !== undefined && (
@@ -131,9 +131,9 @@ export function ConflictScreen({
                   onPress={() => setSession((s) => undecide(s, region.index))}
                   style={({ pressed }) => [styles.clear, pressed && styles.pressed]}
                   accessibilityRole="button"
-                  accessibilityLabel={`重新選擇第 ${region.index + 1} 個衝突`}
+                  accessibilityLabel={`重新选择第 ${region.index + 1} 个冲突`}
                 >
-                  <Text style={styles.clearText}>重新選擇</Text>
+                  <Text style={styles.clearText}>重新选择</Text>
                 </Pressable>
               )}
             </View>
@@ -163,18 +163,18 @@ export function ConflictScreen({
             disabled={left.length === 0}
             style={({ pressed }) => [styles.bulk, (pressed || left.length === 0) && styles.dim]}
             accessibilityRole="button"
-            accessibilityLabel="全部採用對方的版本"
+            accessibilityLabel="全部采用对方的版本"
           >
-            <Text style={styles.bulkText}>全部用對方的</Text>
+            <Text style={styles.bulkText}>全部用对方的</Text>
           </Pressable>
           <Pressable
             onPress={save}
             disabled={!ready}
             style={({ pressed }) => [styles.save, (!ready || pressed) && styles.dim]}
             accessibilityRole="button"
-            accessibilityLabel="儲存解析結果"
+            accessibilityLabel="储存解析结果"
           >
-            <Text style={styles.saveText}>{ready ? '儲存' : `還有 ${left.length} 個`}</Text>
+            <Text style={styles.saveText}>{ready ? '储存' : `还有 ${left.length} 个`}</Text>
           </Pressable>
         </View>
       </View>

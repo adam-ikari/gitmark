@@ -13,21 +13,21 @@ import { View, Text, ScrollView, StyleSheet, StatusBar } from 'react-native';
 import { BlockEditor } from '../components/BlockEditor.tsx';
 import { colors, space, body, mono } from '../theme/tokens.ts';
 
-const INITIAL = `# 專案筆記
+const INITIAL = `# 专案笔记
 
-這是一段**粗體**與*斜體*的混合，還有 \`行內程式碼\`。
+这是一段**粗体**与*斜体*的混合，还有 \`行内程式码\`。
 
-## 清單
+## 清单
 
-- 第一項
-- 第二項
+- 第一项
+- 第二项
 
-## 待辦
+## 待办
 
-- [ ] 完成合併核心
-- [x] 驗證 isomorphic-git
+- [ ] 完成合并核心
+- [x] 验证 isomorphic-git
 
-結尾文字。
+结尾文字。
 `;
 
 export function EditorScreen(): React.JSX.Element {
@@ -51,7 +51,7 @@ export function EditorScreen(): React.JSX.Element {
         <BlockEditor
           source={source}
           onChange={handleChange}
-          placeholder="開始寫作…"
+          placeholder="开始写作…"
         />
       </ScrollView>
 

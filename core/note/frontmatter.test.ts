@@ -75,8 +75,8 @@ test('quoted values lose their quotes', () => {
 });
 
 test('CJK keys and values', () => {
-  const fm = parseFrontmatter('---\n標題: 我的筆記\ntags: [工作]\n---\n內文');
-  assert.equal(fm.fields['標題'], '我的筆記');
+  const fm = parseFrontmatter('---\n标题: 我的笔记\ntags: [工作]\n---\n内文');
+  assert.equal(fm.fields['标题'], '我的笔记');
   assert.deepEqual(fm.fields.tags, ['工作']);
 });
 

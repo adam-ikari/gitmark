@@ -259,15 +259,15 @@ test('resolving renumbers the regions after it', () => {
 // ---------------------------------------------------------------------------
 
 test('a clean document says so', () => {
-  assert.equal(describeResolution('# clean', {}), '沒有衝突');
+  assert.equal(describeResolution('# clean', {}), '没有冲突');
 });
 
 test('an undecided document says how many are waiting', () => {
-  assert.equal(describeResolution(twoRegionMerge(), {}), '2 個衝突待選擇');
+  assert.equal(describeResolution(twoRegionMerge(), {}), '2 个冲突待选择');
 });
 
 test('a partial resolution reports progress', () => {
-  assert.equal(describeResolution(twoRegionMerge(), { 0: 'local' }), '1/2 個衝突已選擇');
+  assert.equal(describeResolution(twoRegionMerge(), { 0: 'local' }), '1/2 个冲突已选择');
 });
 
 /**
@@ -278,7 +278,7 @@ test('a partial resolution reports progress', () => {
  * the caller's bookkeeping: if markers survived for any reason, the commit stops.
  */
 test('assertResolved throws while markers remain', () => {
-  assert.throws(() => assertResolved(twoRegionMerge()), /未解決/);
+  assert.throws(() => assertResolved(twoRegionMerge()), /未解决/);
 });
 
 test('assertResolved passes on the output of a full resolution', () => {
@@ -289,11 +289,11 @@ test('assertResolved passes on the output of a full resolution', () => {
 test('assertResolved rejects markers surviving in the text', () => {
   // Defence in depth: even if a caller believes it resolved everything, markers
   // in the text stop the commit.
-  assert.throws(() => assertResolved('<<<<<<< a\nL\n=======\nR\n>>>>>>> b'), /未解決/);
+  assert.throws(() => assertResolved('<<<<<<< a\nL\n=======\nR\n>>>>>>> b'), /未解决/);
 });
 
 test('assertResolved rejects an unclosed region', () => {
-  assert.throws(() => assertResolved('<<<<<<< a\nL\n=======\nR'), /未解決/);
+  assert.throws(() => assertResolved('<<<<<<< a\nL\n=======\nR'), /未解决/);
 });
 
 test('assertResolved passes for a clean note', () => {

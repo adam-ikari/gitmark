@@ -261,12 +261,12 @@ test('touchedPaths covers writes, deletes and conflicts', () => {
 
 test('describePlan reports conflicts first', () => {
   const plan = planSync([['a.md', v('x', 'L', 'R')]]);
-  assert.match(describePlan(plan), /衝突/);
+  assert.match(describePlan(plan), /冲突/);
 });
 
 test('describePlan reports a clean plan', () => {
   assert.equal(describePlan({ writes: [], deletes: [], conflicts: [] }), '已是最新');
-  assert.match(describePlan(planSync([['a.md', v('x', 'x', 'R')]])), /合併/);
+  assert.match(describePlan(planSync([['a.md', v('x', 'x', 'R')]])), /合并/);
 });
 
 // ---------------------------------------------------------------------------

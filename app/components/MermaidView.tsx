@@ -71,7 +71,7 @@ function buildHtml(source: string): string {
     try {
       if (typeof mermaid === 'undefined') {
         document.getElementById('out').innerHTML = '<div class="err">mermaid.js failed to load (offline?)</div>';
-        window.__markReport(60, 'mermaid.js 未能載入');
+        window.__markReport(60, 'mermaid.js 未能载入');
         return;
       }
       mermaid.initialize({

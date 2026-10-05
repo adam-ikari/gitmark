@@ -13,8 +13,8 @@ import assert from 'node:assert/strict';
 import { toNoteList, sortNotes, conflictCount, type NoteListItem } from './noteIndex.ts';
 
 test('a frontmatter title wins over the filename', () => {
-  const [item] = toNoteList([['notes/a.md', ['---', 'title: 專案筆記', '---', 'body'].join('\n')]]);
-  assert.equal(item?.title, '專案筆記');
+  const [item] = toNoteList([['notes/a.md', ['---', 'title: 专案笔记', '---', 'body'].join('\n')]]);
+  assert.equal(item?.title, '专案笔记');
 });
 
 test('a note with no title falls back to the filename', () => {

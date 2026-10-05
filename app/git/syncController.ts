@@ -123,7 +123,7 @@ export class SyncController {
     if (!outcome.pushed) {
       this.state = {
         phase: 'failed',
-        message: outcome.message ?? '推送失敗，本機變更尚未上傳',
+        message: outcome.message ?? '推送失败，本机变更尚未上传',
         conflicts,
         conflictPaths,
         busy: false,
