@@ -1,6 +1,6 @@
 # Brain Index
 
-_Auto-generated. Last updated 2026-10-05T01:18:11.334Z._
+_Auto-generated. Last updated 2026-10-05T01:40:00.479Z._
 
 - [android-first-target](pages/android-first-target.md) — category: decision | tags: [iOS 延後但程式碼保持跨平台] | # Android 先行驗證
 - [github-pat-git-transport](pages/github-pat-git-transport.md) — category: decision | tags: [純 JS, 無原生 git 依賴] | # Git 傳輸：isomorphic-git + GitHub REST/SmartHTTP + PAT

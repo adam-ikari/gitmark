@@ -5,7 +5,7 @@ category: decision
 status: active
 tags: [不使用 WebView 編輯]
 created: "2026-10-04T13:39:43"
-updated: "2026-10-05T01:18:11"
+updated: "2026-10-05T01:40:00"
 ---
 
 <!-- compiled_truth -->
@@ -65,4 +65,10 @@ updated: "2026-10-05T01:18:11"
   kind: reversal
   summary: "Reversed the two-layer overlay design: it cannot align, because hidden markdown markers keep their advance width and Android TextInput has no per-range styling"
   source: verified against react-native 0.86.3 source 2026-10-05
+  affects: [native-richtext-editor]
+
+- time: 2026-10-05T01:40:00
+  kind: note
+  summary: "Block editor built; layer alignment cannot be verified in CI and has a debug mode instead"
+  source: app/components/BlockEditor.tsx 2026-10-05
   affects: [native-richtext-editor]
