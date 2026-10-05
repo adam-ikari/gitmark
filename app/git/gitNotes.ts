@@ -16,8 +16,8 @@
  */
 
 import { readAtRef, listNotesAtRef, type TriVersion } from '../../core/git/store.ts';
-import { applyPlan, planSync, touchedPaths, type SyncPlan, type SyncPhase } from '../../core/git/sync.ts';
-import type { GitOptions } from '../../core/git/types.ts';
+import { applyPlan, planSync, type SyncPlan, type SyncPhase } from '../../core/git/sync.ts';
+import { toFileUri, type GitOptions } from '../../core/git/types.ts';
 import { bodyOf } from '../../core/note/frontmatter.ts';
 
 export interface Author {
@@ -191,10 +191,30 @@ export class GitNotes {
     const pushed = await this.push();
 
     // Record what we synced against, so the next merge has the right base.
+    //
+    // This is the new *local* head, not the remote's, and that is correct even
+    // when the push failed: local head is what this device has actually
+    // reconciled. Base = our merged result, local = our result, remote =
+    // whatever they pushed means the next sync still merges their work
+    // against ours rather than against a state neither of us ever had.
     const newHead = committed ?? localOid;
     if (newHead) await this.setRef('refs/mark/sync-base', newHead);
 
-    return { phase: pushed ? 'idle' : 'idle', plan, committed: Boolean(committed), pushed, baseOid, remoteOid };
+    if (!pushed) {
+      // A local commit that never reached the remote is not "up to date", and
+      // saying so is the whole point of the status bar.
+      return {
+        phase: 'failed',
+        plan,
+        committed: Boolean(committed),
+        pushed: false,
+        baseOid,
+        remoteOid,
+        message: committed ? '已合併，但推送失敗，下次同步會重試' : '推送失敗',
+      };
+    }
+
+    return { phase: 'idle', plan, committed: Boolean(committed), pushed, baseOid, remoteOid };
   }
 
   private async readWorkingTree(paths: string[]): Promise<Map<string, string | null>> {
@@ -258,9 +278,12 @@ export class GitNotes {
 /**
  * The filesystem operations the sync engine needs, over expo-file-system.
  *
- * Written against the imperative `File` class rather than the async functions
- * because `create({ intermediates: true })` creates parent directories, which a
- * merged note may need when it is the first file in a new folder.
+ * Goes through the same adapter isomorphic-git uses, so the working tree and
+ * `.git` are read by one set of rules. Two adapters over one filesystem is how
+ * a sync ends up comparing a file that one side can see and the other cannot.
+ *
+ * `create({ intermediates: true })` is what lets a merge write the first note
+ * into a folder that does not exist yet.
  */
 
 interface FileHandleLike {
@@ -313,10 +336,59 @@ function storeFromFs(opts: GitOptions) {
         return false;
       }
     },
+    /**
+     * Note paths under the working tree.
+     *
+     * Recursive, because notes are organised in folders. Skips `.git` and
+     * anything else starting with a dot: those are git's own files, and walking
+     * them would be both slow and wrong to treat as notes.
+     */
     async list() {
-      return [];
+      return listNotesUnder(opts.dir, '');
     },
   };
+}
+
+/**
+ * Depth-first walk yielding repo-relative `.md` paths.
+ *
+ * `dir` is a POSIX path; the `file://` scheme is added here, at the expo
+ * boundary, for the same reason isomorphic-git never sees one.
+ */
+export async function listNotesUnder(dir: string, prefix: string): Promise<string[]> {
+  const { Directory } = await import('expo-file-system');
+  const absolute = toFileUri(`${dir}/${prefix}`.replace(/\/+/g, '/'));
+
+  let entries: Array<{ name: string }>;
+  try {
+    const directory = new Directory(absolute) as unknown as {
+      exists: boolean;
+      list(): Array<{ name: string }>;
+    };
+    if (!directory.exists) return [];
+    entries = directory.list();
+  } catch {
+    // A directory that cannot be read is an empty list, not a failure: the note
+    // list should still render whatever else is readable.
+    return [];
+  }
+
+  const out: string[] = [];
+  for (const entry of entries) {
+    if (entry.name.startsWith('.')) continue;
+    const child = prefix ? `${prefix}/${entry.name}` : entry.name;
+
+    // A note is a file whose name ends in `.md`; anything else is treated as a
+    // folder to descend into. Deciding by extension rather than by asking the
+    // filesystem avoids a stat per entry, and a folder named `x.md` is not a
+    // case worth supporting.
+    if (entry.name.endsWith('.md')) {
+      out.push(child);
+      continue;
+    }
+    out.push(...(await listNotesUnder(dir, child)));
+  }
+  return out;
 }
 
 export { bodyOf };
