@@ -23,8 +23,8 @@ import {
   type ViewStyle,
 } from 'react-native';
 
-import { parseDocument } from '@core/markdown/blocks.ts';
-import type { Inline, RangedBlock } from '@core/markdown/types.ts';
+import { parseDocument } from '../../core/markdown/blocks.ts';
+import type { Inline, RangedBlock } from '../../core/markdown/types.ts';
 import { SvgView } from './SvgView.tsx';
 import { MermaidView } from './MermaidView.tsx';
 import { colors, space, body, code, heading as headingStyle, link, mono } from '../theme/tokens.ts';

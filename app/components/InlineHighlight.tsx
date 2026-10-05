@@ -11,7 +11,7 @@
 import React, { useMemo } from 'react';
 import { Text, type StyleProp, type TextStyle } from 'react-native';
 
-import { toSegments } from '@core/markdown/segments.ts';
+import { toSegments } from '../../core/markdown/segments.ts';
 import { colors, mono } from '../theme/tokens.ts';
 
 export interface InlineHighlightProps {

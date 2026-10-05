@@ -27,7 +27,7 @@ import Svg, {
   Mask,
 } from 'react-native-svg';
 
-import { parseSvg, SvgParseError, walkSvg, type SvgElement, type SvgNode } from '@core/svg/parse.ts';
+import { parseSvg, SvgParseError, walkSvg, type SvgElement, type SvgNode } from '../../core/svg/parse.ts';
 import { colors, space, mono } from '../theme/tokens.ts';
 
 export interface SvgViewProps {

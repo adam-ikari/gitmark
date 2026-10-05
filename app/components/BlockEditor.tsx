@@ -27,8 +27,8 @@ import {
   type TextInputSelectionChangeEventData,
 } from 'react-native';
 
-import { parseDocument } from '@core/markdown/blocks.ts';
-import type { RangedBlock } from '@core/markdown/types.ts';
+import { parseDocument } from '../../core/markdown/blocks.ts';
+import type { RangedBlock } from '../../core/markdown/types.ts';
 import {
   blockContextAt,
   insertNewline,
@@ -36,7 +36,7 @@ import {
   setHeading,
   toggleList,
   toggleTask,
-} from '@core/richtext/blocks.ts';
+} from '../../core/richtext/blocks.ts';
 import {
   replaceRange,
   deleteBackward,
@@ -44,8 +44,8 @@ import {
   selectionRange,
   type EditResult,
   type Selection,
-} from '@core/richtext/splice.ts';
-import { toggleMark, toggleCode, markStateAt, type MarkName } from '@core/richtext/marks.ts';
+} from '../../core/richtext/splice.ts';
+import { toggleMark, toggleCode, markStateAt, type MarkName } from '../../core/richtext/marks.ts';
 import { InlineHighlight } from './InlineHighlight.tsx';
 import { blockTextStyle, type BlockKind } from './blockTextStyle.ts';
 import { colors, space, mono } from '../theme/tokens.ts';

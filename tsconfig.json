@@ -3,15 +3,10 @@
   "compilerOptions": {
     "strict": true,
     "noUncheckedIndexedAccess": true,
-    "types": ["node", "react"],
-    "paths": {
-      "@core/*": [
-        "./core/*"
-      ],
-      "@app/*": [
-        "./app/*"
-      ]
-    },
+    "types": [
+      "node",
+      "react"
+    ],
     "allowImportingTsExtensions": true
   },
   "include": [
