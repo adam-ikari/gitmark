@@ -17,7 +17,6 @@
   --muted: #7d7a72;
   --line: #e3e0d8;
   --accent: #b3410a;
-  --accent-soft: #f7e9e0;
   --ok: #1f6b45;
   --pending: #8a6d1f;
 
@@ -39,7 +38,6 @@
     --muted: #918d84;
     --line: #2e2b27;
     --accent: #f08a5a;
-    --accent-soft: #2a1d16;
     --ok: #63c194;
     --pending: #d8b661;
   }
@@ -294,61 +292,6 @@ code {
 .feature h3 { font-size: 0.98rem; margin: 0 0 0.4rem; }
 .feature p { margin: 0; font-size: 0.9rem; color: var(--ink-2); }
 
-/* ---------------- architecture ---------------- */
-
-.layers {
-  display: grid;
-  gap: 1.5rem;
-  margin-bottom: 2rem;
-}
-@media (min-width: 44rem) {
-  .layers { grid-template-columns: 1fr 1fr; gap: 2rem; }
-}
-
-.layer {
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  padding: 1.25rem 1.4rem;
-  background: var(--paper-2);
-}
-
-.layer-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-  margin-bottom: 0.85rem;
-}
-
-.layer h3 { margin: 0; font-size: 1rem; }
-.layer h3 code { background: none; border: none; padding: 0; font-size: 1rem; }
-
-.tag {
-  font-family: var(--mono);
-  font-size: 0.68rem;
-  letter-spacing: 0.04em;
-  padding: 0.15rem 0.5rem;
-  border-radius: 999px;
-  border: 1px solid var(--line);
-  color: var(--muted);
-  white-space: nowrap;
-}
-.tag-ok { color: var(--ok); border-color: color-mix(in srgb, var(--ok) 35%, transparent); }
-.tag-native { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 35%, transparent); }
-
-.layer ul { margin: 0; padding-left: 1.1rem; font-size: 0.88rem; color: var(--ink-2); }
-.layer li { margin-bottom: 0.3rem; }
-.layer li b { color: var(--ink); font-weight: 600; }
-
-.arch-note {
-  font-size: 0.9rem;
-  color: var(--ink-2);
-  border-left: 2px solid var(--accent);
-  padding-left: 1rem;
-  margin: 0;
-}
-
 /* ---------------- status ---------------- */
 
 .status-grid {
@@ -385,37 +328,6 @@ code {
 .status-card .done li::before { background: var(--ok); }
 .status-card .pending li::before { background: var(--pending); }
 .status-card li b { color: var(--ink); }
-
-.callout {
-  background: var(--accent-soft);
-  border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
-  border-radius: 10px;
-  padding: 1.25rem 1.4rem;
-}
-.callout p { margin: 0; font-size: 0.9rem; color: var(--ink-2); }
-.callout b { color: var(--ink); }
-.callout code { background: color-mix(in srgb, var(--paper) 60%, transparent); }
-
-/* ---------------- stack ---------------- */
-
-/* The section needs no layout of its own; `.chips` below carries it. */
-
-.chips {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-.chips li {
-  font-family: var(--mono);
-  font-size: 0.8rem;
-  padding: 0.3rem 0.7rem;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  color: var(--ink-2);
-}
 
 /* ---------------- footer ---------------- */
 

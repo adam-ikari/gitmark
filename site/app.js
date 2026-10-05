@@ -31,7 +31,7 @@ function apply(theme) {
   if (toggle) {
     toggle.setAttribute(
       'aria-label',
-      dark ? '切換為淺色模式' : '切換為深色模式',
+      dark ? '切换为浅色模式' : '切换为深色模式',
     );
   }
 }

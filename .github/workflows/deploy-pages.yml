@@ -4,8 +4,9 @@
 # upload and publish them. That is a deliberate choice: a landing page does not
 # need a toolchain, and there is nothing here that can break between builds.
 #
-# One-time setup, required once per repository:
-#   Settings → Pages → Build and deployment → Source → "GitHub Actions"
+# Pages is enabled automatically below (`enablement: true`), so there is no
+# manual setting to remember. The repository owner must grant the workflow
+# permission to do so, which it already has via `pages: write`.
 #
 # Deployment is a deploy action keyed on a published build artifact rather than a
 # branch, so a commit cannot change the live site until this workflow has run and
@@ -46,6 +47,12 @@ jobs:
       - name: Configure Pages
         id: pages
         uses: actions/configure-pages@v5
+        with:
+          # Enables Pages on first run instead of failing and waiting for someone
+          # to visit the repository settings. Without this the very first
+          # deployment always fails with a 404, which is a confusing first
+          # impression for a step that should be automatic.
+          enablement: true
 
       - name: Upload the site
         uses: actions/upload-pages-artifact@v3

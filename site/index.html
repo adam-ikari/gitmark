@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-Hans">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>mark — 以 git 為儲存層的 markdown 筆記 app</title>
-<meta name="description" content="mark 是一個 React Native 筆記 app：筆記就是 git 倉庫裡的 markdown 檔，儲存是 commit，推送與拉取是同步，並以三方合併安全地處理衝突。" />
-<meta property="og:title" content="mark — 以 git 為儲存層的 markdown 筆記 app" />
-<meta property="og:description" content="儲存是 commit，同步是 fetch 與 pull，衝突以 diff3 安全合併。" />
+<title>mark — 以 git 为存储层的 markdown 笔记 app</title>
+<meta name="description" content="mark 是一个 React Native 笔记 app：笔记就是 git 仓库里的 markdown 文件，保存是提交，推送与拉取是同步，并以三方合并安全地处理冲突。" />
+<meta property="og:title" content="mark — 以 git 为存储层的 markdown 笔记 app" />
+<meta property="og:description" content="保存是提交，同步是抓取与推送，冲突以三方合并安全处理。" />
 <meta property="og:type" content="website" />
 <meta name="color-scheme" content="light dark" />
 <link rel="icon" href="./assets/mark.svg" type="image/svg+xml" />
@@ -20,11 +20,10 @@
     <span>mark</span>
   </a>
   <div class="nav-links">
-    <a href="#principles">主張</a>
+    <a href="#principles">主张</a>
     <a href="#features">功能</a>
-    <a href="#architecture">架構</a>
-    <a href="#status">現況</a>
-    <button id="theme-toggle" type="button" aria-label="切換深色模式">
+    <a href="#status">现状</a>
+    <button id="theme-toggle" type="button" aria-label="切换深色模式">
       <span class="theme-icon" aria-hidden="true"></span>
     </button>
   </div>
@@ -35,15 +34,15 @@
   <!-- ================= hero ================= -->
   <section class="hero">
     <p class="eyebrow">React Native · Android</p>
-    <h1>筆記就是 git 倉庫裡的<br /><em>markdown 檔</em></h1>
+    <h1>笔记就是 git 仓库里的<br /><em>markdown 文件</em></h1>
     <p class="lede">
-      儲存是一次 commit。推送與拉取是同步。兩個人同時改到同一段時，
-      三方合併會自動處理；真的合不起來才會停下來找你。
-      沒有私有雲、沒有資料格式轉換 —— 筆記離開這個 app 仍然是可讀的純文字。
+      保存就是一次提交，推送与拉取就是同步。两个人同时改到同一段时，
+      改动不重叠就自动合并；真的合不起来才会停下来找你。
+      没有私有云，也没有格式转换 —— 笔记离开这个 app 仍然是可读的纯文本。
     </p>
 
-    <!-- A note's history is the point of the product, so show it. -->
-    <figure class="gitlog" aria-label="一個筆記的 git 歷史">
+    <!-- 笔记的历史就是这个产品的核心，所以直接展示它。 -->
+    <figure class="gitlog" aria-label="一个笔记的 git 历史">
       <figcaption>
         <span class="dot"></span>~/notes <span class="muted">(origin/main)</span>
       </figcaption>
@@ -51,19 +50,19 @@
 Author: you
 Date:   Sun Oct 5 09:14
 
-    <span class="s">整理合併策略</span>
+    <span class="s">整理合并策略</span>
 
  <span class="c">commit</span> <span class="h">7b2e004</span>
 Author: someone-else
 Date:   Sun Oct 5 08:52
 
-    <span class="s">補充 mermaid 流程圖</span>
+    <span class="s">补充 mermaid 流程图</span>
 
  <span class="c">commit</span> <span class="h">2f9a1c3</span>
 Author: you
 Date:   Sat Oct 4 22:07
 
-    <span class="s">新增筆記：合併策略</span>
+    <span class="s">新增笔记：合并策略</span>
 
 <span class="d"> notes/merge.md | 4 +++-</span></code></pre>
     </figure>
@@ -71,34 +70,33 @@ Date:   Sat Oct 4 22:07
 
   <!-- ================= principles ================= -->
   <section id="principles">
-    <h2><span class="num">01</span>三個主張</h2>
+    <h2><span class="num">01</span>三个主张</h2>
 
     <div class="principles">
       <article>
-        <h3>git 就是儲存層，不是附件</h3>
+        <h3>git 就是存储层，不是附件</h3>
         <p>
-          沒有資料庫。整份筆記倉庫是一個 git repo，透過
-          <code>isomorphic-git</code> 在裝置上直接操作。歷史是免費的，
-          而且你隨時可以離開這個 app 用任何工具改同一份檔案。
+          没有数据库。整份笔记就是一个 git 仓库，直接在设备上读写。
+          改动历史免费获得，而且你随时可以离开这个 app，
+          用任何编辑器修改同一份文件。
         </p>
       </article>
 
       <article>
-        <h3>安全優先於自動</h3>
+        <h3>安全优先于自动</h3>
         <p>
-          改動不重疊就自動合併；重疊且無法化解才升級為衝突，而且
-          <strong>整個同步會停下來，不 commit、不推送</strong>。
-          把帶衝突標記的 commit 推上去，等於把一個人的未解問題變成所有人的問題。
+          改动不重叠就自动合并；重叠且无法化解才升级为冲突，而且
+          <strong>整个同步会停下来，不提交也不推送</strong>，
+          直到你处理完为止。
         </p>
       </article>
 
       <article>
-        <h3>markdown 是唯一真實來源</h3>
+        <h3>文件始终是纯文本</h3>
         <p>
-          編輯器是 markdown 的一個視圖。每次操作都是對原文的
-          <em>最小文字替換</em>，不是重新序列化。
-          選取「italic」按粗體，只會在那八個字元周圍插入 <code>**</code>，
-          其餘部分保持 byte-identical —— 否則 git log 會被雜訊淹沒。
+          你的笔记就是普通的 markdown 文件，不存在专有格式。
+          编辑器只是它的一个视图 —— 排版后的样子存在文件里，
+          版本历史干净可读，不会被无意义的改动淹没。
         </p>
       </article>
     </div>
@@ -111,138 +109,70 @@ Date:   Sat Oct 4 22:07
     <div class="features">
       <div class="feature">
         <h3>Markdown 渲染</h3>
-        <p>標題、清單、任務清單、引用、表格、巢狀清單、GFM 刪除線。行內樣式以淡化標記顯示，段落結構為真實排版。</p>
+        <p>标题、列表、任务列表、引用、表格、嵌套列表与删除线，编辑时所见即所得。</p>
       </div>
       <div class="feature">
-        <h3>Mermaid 圖</h3>
-        <p><code>```mermaid</code> 圍欄直接渲染流程圖、時序圖、類別圖。沙盒化的 WebView，版本釘死以免大版本更新靜默改變每一張圖。</p>
+        <h3>Mermaid 图</h3>
+        <p>流程图、时序图、类图直接写在笔记里，保存后就能看到，不用额外工具。</p>
       </div>
       <div class="feature">
-        <h3>SVG</h3>
-        <p><code>```svg</code> 圍欄以 react-native-svg 原生向量渲染，任何縮放下都保持銳利。看不懂的元素會明確回報，不會靜默消失。</p>
+        <h3>SVG 图形</h3>
+        <p>矢量图形在任何缩放下都保持锐利，适合示意图与图表。</p>
       </div>
       <div class="feature">
-        <h3>原生富文本編輯</h3>
-        <p>每個段落一個原生輸入元件。粗體、斜體、行內程式碼、刪除線、標題層級、清單縮排、任務勾選，全部可用。</p>
+        <h3>原生富文本编辑</h3>
+        <p>加粗、斜体、行内代码、删除线、标题层级、列表缩进与任务勾选，都在输入框上方一键切换。</p>
       </div>
       <div class="feature">
-        <h3>Frontmatter metadata</h3>
-        <p>檔案內建 <code>---</code> 區塊承載標題、標籤、建立與更新時間。解析器會回報精確的位元組範圍，所以改動內文不會重寫中繼資料。</p>
+        <h3>标签与元数据</h3>
+        <p>标题、标签、创建与更新时间写在文件里，方便搜索与整理。</p>
       </div>
       <div class="feature">
-        <h3>衝突標記</h3>
-        <p>真的衝突用標準 diff3 標記寫進檔案，任何工具開啟都看得見。狀態列確保你不會在幾週後才發現它還沒解決。</p>
+        <h3>冲突不吞数据</h3>
+        <p>真的合不起来时会把冲突直接标在文件里，任何工具打开都看得见，不会悄悄丢掉任何一边。</p>
       </div>
     </div>
-  </section>
-
-  <!-- ================= architecture ================= -->
-  <section id="architecture">
-    <h2><span class="num">03</span>架構</h2>
-    <p class="section-lede">
-      分層的唯一規則：<code>core/</code> 是純 TypeScript，不 import 任何
-      React Native 或 Node API。所有副作用都在邊緣被注入。
-    </p>
-
-    <div class="layers">
-      <div class="layer">
-        <div class="layer-head">
-          <h3><code>core/</code></h3>
-          <span class="tag tag-ok">可直接在 Node 測試</span>
-        </div>
-        <ul>
-          <li><b>markdown</b> — inline 與 block 解析、樣式片段</li>
-          <li><b>merge</b> — LCS diff、hunk 群聚、diff3 三方合併</li>
-          <li><b>richtext</b> — 文字 splice、行內與區塊編輯操作</li>
-          <li><b>note</b> — frontmatter 解析與序列化</li>
-          <li><b>svg</b> — XML 讀取器與形狀樹</li>
-          <li><b>git</b> — 可注入的檔案系統與傳輸介面</li>
-        </ul>
-      </div>
-
-      <div class="layer">
-        <div class="layer-head">
-          <h3><code>app/</code></h3>
-          <span class="tag tag-native">React Native</span>
-        </div>
-        <ul>
-          <li><b>components</b> — 區塊編輯器、渲染器、狀態列</li>
-          <li><b>git</b> — fetch 傳輸、isomorphic-git 轉接層</li>
-          <li><b>screens</b> — 編輯、渲染、筆記列表</li>
-          <li><b>theme</b> — 設計代幣</li>
-        </ul>
-      </div>
-    </div>
-
-    <p class="arch-note">
-      這個邊界不是潔癖：正是因為 <code>core/</code> 能在無模擬器、無網路的
-      環境下測試，三方合併與編輯操作才可能有
-      <b>347 個測試</b>。而它與 isomorphic-git 的差異化測試顯示，
-      合併決策與參考實作在 27 個案例中全部一致，只有一個刻意的政策差異。
-    </p>
   </section>
 
   <!-- ================= status ================= -->
   <section id="status">
-    <h2><span class="num">04</span>現況與驗證邊界</h2>
+    <h2><span class="num">03</span>开发进度</h2>
 
     <div class="status-grid">
       <div class="status-card">
-        <h3>已完成並驗證</h3>
+        <h3>已经可用</h3>
         <ul class="done">
-          <li><b>347 個單元測試</b>全數通過，涵蓋合併、編輯、解析、frontmatter</li>
-          <li>Android bundle 成功建置（713 個模組）</li>
-          <li>isomorphic-git 對<b>真實 GitHub</b> 驗證通過 clone / listFiles / log</li>
-          <li>diff3 與 isomorphic-git 內建的參考實作做差異測試</li>
+          <li>Markdown 编辑与渲染，含表格、任务列表与代码块</li>
+          <li>Mermaid 图与 SVG 图形</li>
+          <li>接入 GitHub 仓库，保存即提交</li>
+          <li>多设备同步，改动不重叠时自动合并</li>
         </ul>
       </div>
 
       <div class="status-card">
-        <h3>尚未在實機驗證</h3>
+        <h3>还在进行</h3>
         <ul class="pending">
-          <li>編輯器兩層的字型度量對齊（需實機或模擬器）</li>
-          <li>中文輸入法（IME）組字期間的行為</li>
-          <li>真實 GitHub 上的 push 與權限流程</li>
-          <li>mermaid 與 SVG 在裝置上的實際顯示</li>
+          <li>真机上的编辑器手感与中文输入体验</li>
+          <li>冲突处理的交互打磨</li>
+          <li>笔记列表与标签管理</li>
+          <li>iOS 版本</li>
         </ul>
       </div>
     </div>
 
-    <aside class="callout">
-      <p>
-        <b>一個被推翻的設計。</b>
-        最初的方案是「底層渲染富文本 + 上層蓋一個透明輸入框」。
-        實測 <code>react-native@0.86.3</code> 原始碼後確認它行不通：
-        Android 的 <code>TextInput</code> 不接受 styled children，
-        而隱藏的 markdown 標記不會移除它的 advance width ——
-        兩層字元流不同，軟換行必然錯位。
-        <b>這不是調校問題，是架構矛盾。</b>
-        現有方案改成每個段落一個原生輸入框，兩層持有<em>相同的字元</em>，
-        因此可以對齊。
-      </p>
-    </aside>
-  </section>
+    <p class="section-lede" style="margin-top: 2rem;">
+      目前以 Android 为主要目标。技术细节、决策记录与开发进度都放在
+      <a href="https://github.com/adam-ikari/gitmark">仓库</a>里。
+    </p>
 
-  <section class="stack">
-    <h2><span class="num">05</span>技術棧</h2>
-    <ul class="chips">
-      <li>React Native 0.86</li>
-      <li>Expo SDK 57</li>
-      <li>TypeScript 6</li>
-      <li>isomorphic-git 1.43</li>
-      <li>react-native-svg 15</li>
-      <li>react-native-webview 13</li>
-      <li>expo-file-system 57</li>
-      <li>expo-secure-store 57</li>
-    </ul>
   </section>
 
 </main>
 
 <footer>
   <p>
-    mark · 以 git 為儲存層的 markdown 筆記 app<br />
-    <span class="muted">Android 優先驗證 · 筆記保持為可攜的純文字</span>
+    mark · 以 git 为存储层的 markdown 笔记 app<br />
+    <span class="muted">Android 优先验证 · 笔记保持为可移植的纯文本</span>
   </p>
 </footer>
 
