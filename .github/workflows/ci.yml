@@ -77,15 +77,24 @@ jobs:
       # unless `include-hidden-files` is set, so the step reported success while
       # uploading nothing at all.
       - name: Build the Android bundle
+        id: bundle
         run: npx expo export --platform android
 
       # Kept so a bundle failure on someone else's machine can be inspected
-      # without reproducing it. `error` rather than `ignore`: the step above must
-      # have produced this directory, so a miss here means something is wrong and
-      # should not pass quietly — which is exactly what the previous
-      # configuration did.
+      # without reproducing it.
+      #
+      # Two deliberate choices, both correcting silent passes:
+      #
+      # - Gated on the build having succeeded. With a bare `if: always()` this
+      #   step also ran after an earlier failure, where `dist/` legitimately does
+      #   not exist, and reported a second red mark that looked like a separate
+      #   problem.
+      # - `if-no-files-found: error`. Given the gate above, the build step
+      #   succeeded, so the directory must exist. The previous `ignore` turned
+      #   that guarantee into silence, which is how a step meant to aid debugging
+      #   shipped without ever producing anything.
       - name: Upload the bundle
-        if: always()
+        if: always() && steps.bundle.outcome == 'success'
         uses: actions/upload-artifact@v7
         with:
           name: android-bundle
