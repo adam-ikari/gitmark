@@ -56,6 +56,9 @@ export class FakeExpoFs implements ExpoFsApi {
       info() {
         return { modificationTime: fs.mtimes.get(localPath) };
       },
+      modifiedAt() {
+        return fs.mtimes.get(localPath) ?? 0;
+      },
     };
   }
 

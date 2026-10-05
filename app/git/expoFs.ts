@@ -61,6 +61,7 @@ export interface FileLike {
   delete(): void;
   /** Metadata; `modificationTime` is in ms since epoch and may be absent. */
   info(): { modificationTime?: number };
+  modifiedAt(): number;
 }
 
 export interface DirectoryLike {
@@ -160,7 +161,7 @@ export function createFsFrom(api: ExpoFsApi, resolve: (p: string) => string): Fs
     // modification time there, and `modificationTime` is documented as possibly
     // absent, so a missing value falls back to 0 rather than NaN — see the
     // note in core/git/types.ts on why NaN would corrupt the index.
-    const mtimeMs = isDir ? 0 : (asFile.info().modificationTime ?? 0);
+    const mtimeMs = isDir ? 0 : (asFile.modifiedAt() ?? 0);
 
     return {
       dev: 1,
