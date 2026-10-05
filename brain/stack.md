@@ -2,7 +2,7 @@
 slug: stack
 title: Tech stack
 role: tech-stack choices
-updated: "2026-10-05T06:25:52"
+updated: "2026-10-05T08:04:26"
 ---
 
 # Tech stack
@@ -11,7 +11,7 @@ updated: "2026-10-05T06:25:52"
 slug: stack
 title: Tech stack
 role: tech-stack choices
-updated: "2026-10-05T15:10:00"
+updated: "2026-10-05T16:05:00"
 ---
 
 # Tech stack
@@ -31,6 +31,8 @@ updated: "2026-10-05T15:10:00"
 | svg | react-native-svg / 轉點陣 / WebView | **react-native-svg + 自寫 svg→rnsvg 轉換** | 真正的向量渲染，非點陣降級 |
 | images | RN Image / 轉 base64 | **RN Image + 相對路徑** | 圖片隨 repo 走，遠端渲染走 git blob URL |
 | CI | 無 / 只有 Pages / 完整驗證 | **GitHub Actions：install → typecheck → test → differential → bundle** | 邏輯幾乎全是純 TS，測試在 Node 直接跑；bundle 是沒有裝置時最接近「app 建得起來」的代理 |
+| APK 發布 | 進 git / Pages 靜態目錄 / **GitHub Release** | **GitHub Release 資產** | 74 MB 二進位檔進 repo 會拖慢每次 clone 與 Pages 部署；release 資產有版本化固定網址、可放 sha256 |
+| 發布簽名 | debug key / 正式金鑰 | **倉庫外的正式金鑰，經 Gradle `-P` 傳入** | debug key 發布後無法用正式金鑰覆蓋安裝；解除安裝會刪掉本機筆記。見 [[android-release-signing]] |
 
 ## 核心架構原則
 `core/` 是**純 TypeScript**：不 import React、React Native、expo 或 isomorphic-git 的 IO 層。這讓 markdown、diff3 合併、文件模型、編輯操作都能用 `node --test` 在無模擬環境下測試，也是 [[android-first-target]] 得以成立的前提。
@@ -38,6 +40,8 @@ updated: "2026-10-05T15:10:00"
 `core/` 也承擔**可從裝置剝離的適配器邏輯**：路徑轉換、stat 形狀、錯誤碼。adapter 本身離開裝置無法驗證，能抽出來的部分就抽出來測。
 
 **平台邊界不得 cast。** expo 型別的 `as unknown as` 會讓 typecheck 失效——實測藏過一個會讓 sync 完全不能用的 bug。見 [[expo-boundary-no-casts]]。
+
+**綠色的 CI 不等於 CI 有在做事。** 見 [[ci-green-is-not-working]]。
 
 ## Decision mindmap
 
@@ -48,6 +52,7 @@ graph LR
   D --> E[富文本編輯]
   D --> R[渲染]
   D --> Q[品質]
+  D --> S[發布]
   P --> P1[Android 先行]
   G --> G1[isomorphic-git]
   G1 --> G2[GitHub REST + PAT]
@@ -59,11 +64,16 @@ graph LR
   R --> R2[svg→react-native-svg]
   Q --> Q1[純 TS 可在 Node 測]
   Q --> Q2[CI 每次 push 都驗證]
+  S --> S1[APK 走 GitHub Release]
+  S --> S2[正式簽名金鑰]
+  S --> S3[網站提供下載連結]
 ```
 
 ## Open items
-- **本機無 `/dev/kvm`，emulator 無法啟動。** 編輯器的實機對齊、git adapter 對真實 expo-file-system 的行為，都沒有任何自動化驗證；CI 的 bundle 步驟只涵蓋 module graph。
-- 編輯器還沒接上真實筆記（`EditorScreen` 仍用寫死的範例文字），所以衝突處理裡的「手動編輯」目前會跳到一個編輯錯誤內容的畫面。
+- **本機無 `/dev/kvm`，emulator 無法啟動。** 編輯器的實機對齊、git adapter 對真實 expo-file-system 的行為、APK 在真機上的安裝與運作，都沒有任何自動化驗證。已發布的 v0.1.0-preview.1 是**預覽版，不是完成品**。
+- 簽名設定目前是 `android/app/build.gradle` 的本機修改，`expo prebuild --clean` 後必須重新套用；長期的正解是寫成 Expo config plugin。
+- 發布金鑰需要另外備份，否則之後無法發布可升級的版本。
+- 編輯器還沒接上真實筆記，衝突處理裡的「手動編輯」目前會跳到編輯錯誤內容的畫面。
 - 大筆記需要區塊虛擬化；每個區塊一個 `TextInput` 的元件數量成本尚未處理。
 - 中文輸入法（IME）組字期間（composing）會不會造成透明 TextInput 與底層錯位，需在 Android 實機測試。
 - 若要讓 CI 跑 emulator，需要一台有 KVM 的 runner；可行時再加一個 device job，而不是把 on-device 斷言塞進純 Node 測試。

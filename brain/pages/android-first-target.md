@@ -5,7 +5,7 @@ category: decision
 status: active
 tags: [iOS 延後但程式碼保持跨平台]
 created: "2026-10-04T13:39:43"
-updated: "2026-10-04T13:39:59"
+updated: "2026-10-05T08:04:51"
 ---
 
 <!-- compiled_truth -->
@@ -40,3 +40,9 @@ updated: "2026-10-04T13:39:59"
   summary: Rewrote compiled_truth to the new best understanding
   source: user-confirmed 2026-10-04
   affects: [android-first-target]
+
+- time: 2026-10-05T08:04:51
+  kind: evidence
+  summary: "Shipped v0.1.0-preview.1 as a release asset, but on-device verification is still impossible here (no /dev/kvm); the APK itself has never been installed or run"
+  source: gradlew assembleRelease 2026-10-05
+  affects: [android-first-target, android-release-signing]

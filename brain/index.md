@@ -1,8 +1,9 @@
 # Brain Index
 
-_Auto-generated. Last updated 2026-10-05T07:12:23.604Z._
+_Auto-generated. Last updated 2026-10-05T08:04:51.524Z._
 
 - [android-first-target](pages/android-first-target.md) — category: decision | tags: [iOS 延後但程式碼保持跨平台] | # Android 先行驗證
+- [android-release-signing](pages/android-release-signing.md) — category: decision | tags: [發布, 簽名, 資料遺失] | <current best understanding — replace this with the real content>
 - [ci-green-is-not-working](pages/ci-green-is-not-working.md) — category: decision | tags: [CI, artifact, 驗證方法] | <current best understanding — replace this with the real content>
 - [expo-boundary-no-casts](pages/expo-boundary-no-casts.md) — category: decision | tags: [typecheck, expo-file-system, 邊界] | <current best understanding — replace this with the real content>
 - [git-fs-adapter-contract](pages/git-fs-adapter-contract.md) — category: decision | tags: [isomorphic-git, expo-file-system, 實測契約] | <current best understanding — replace this with the real content>
