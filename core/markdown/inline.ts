@@ -347,15 +347,23 @@ export function parseInlineRange(src: string, srcStart: number, srcEnd: number):
     if (c === '\n') {
       // Two or more trailing spaces before the newline make it a hard break.
       const trailing = countTrailingSpaces(buf);
+      // The trailing spaces are stripped from the text node's value, so the
+      // text node must end *before* them. Flushing at `i` would give it a range
+      // wider than its content, which desynchronises every source range
+      // downstream — including the editor's styled layer.
+      const textEnd = i - trailing;
+
       if (trailing >= 2) {
         buf = buf.slice(0, buf.length - 2);
-        push({ type: 'hardbreak' }, i, i + 1);
-        i += 1;
-        bufStart = i;
-        continue;
+        flush(textEnd);
+        // A hard break owns the spaces, since they are its syntax.
+        out.push({ type: 'hardbreak', srcStart: textEnd, srcEnd: i + 1 });
+      } else {
+        buf = buf.slice(0, buf.length - trailing);
+        flush(textEnd);
+        out.push({ type: 'softbreak', srcStart: textEnd, srcEnd: i + 1 });
       }
-      buf = buf.slice(0, buf.length - trailing);
-      push({ type: 'softbreak' }, i, i + 1);
+
       i += 1;
       bufStart = i;
       continue;

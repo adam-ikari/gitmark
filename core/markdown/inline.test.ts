@@ -148,6 +148,20 @@ test('intra-word double underscore is literal too', () => {
   assert.equal(p('foo__bar__baz'), 'text("foo__bar__baz")');
 });
 
+test('a text node before a hard break does not claim the trailing spaces', () => {
+  // Regression: the text node's range used to be wider than its value, because
+  // the stripped spaces were left inside its range. Every downstream consumer
+  // that maps source offsets (the editor's styled layer) then desynchronised.
+  const src = 'a  \nb';
+  const nodes = parseInlineRange(src, 0, src.length);
+  const text = nodes.find((n) => n.type === 'text')!;
+  assert.equal(text.value, 'a');
+  assert.equal(text.srcEnd - text.srcStart, text.value.length);
+  assert.equal(src.slice(text.srcStart, text.srcEnd), 'a');
+  const brk = nodes.find((n) => n.type === 'hardbreak')!;
+  assert.equal(src.slice(brk.srcStart, brk.srcEnd), '  \n');
+});
+
 test('softbreak and hardbreak', () => {
   assert.equal(p('a\nb'), 'text("a") softbreak text("b")');
   assert.equal(p('a  \nb'), 'text("a") hardbreak text("b")');
