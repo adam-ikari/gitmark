@@ -1,6 +1,6 @@
 # Brain Index
 
-_Auto-generated. Last updated 2026-10-05T05:01:26.966Z._
+_Auto-generated. Last updated 2026-10-05T05:45:29.941Z._
 
 - [android-first-target](pages/android-first-target.md) — category: decision | tags: [iOS 延後但程式碼保持跨平台] | # Android 先行驗證
 - [git-fs-adapter-contract](pages/git-fs-adapter-contract.md) — category: decision | tags: [isomorphic-git, expo-file-system, 實測契約] | <current best understanding — replace this with the real content>
