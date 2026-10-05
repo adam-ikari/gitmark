@@ -22,7 +22,14 @@ export interface NoteListScreenProps {
   dir: string;
   /** Changing this forces a reload; bump it after a sync. */
   revision?: number;
-  onOpen: (path: string) => void;
+  /**
+   * Open a note.
+   *
+   * The whole item is passed, not just the path, because a conflicted note goes
+   * somewhere different: it opens the resolution screen rather than the editor.
+   * The caller needs the flag to make that choice.
+   */
+  onOpen: (item: NoteListItem) => void;
   onSync: () => void;
   busy?: boolean;
 }
@@ -104,7 +111,7 @@ export function NoteListScreen({
         }
         renderItem={({ item }) => (
           <Pressable
-            onPress={() => onOpen(item.path)}
+            onPress={() => onOpen(item)}
             style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
           >
             <Text style={styles.rowTitle} numberOfLines={1}>

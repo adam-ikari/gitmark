@@ -1,14 +1,16 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { EditorScreen } from './app/screens/EditorScreen.tsx';
 import { RenderScreen } from './app/screens/RenderScreen.tsx';
 import { NoteListScreen } from './app/screens/NoteListScreen.tsx';
 import { RepoSetupScreen } from './app/screens/RepoSetupScreen.tsx';
+import { ConflictScreen } from './app/screens/ConflictScreen.tsx';
 import { SyncStatusBar } from './app/components/SyncStatusBar.tsx';
 import { SyncController, IDLE_STATE, type SyncState } from './app/git/syncController.ts';
 import { isConfigured } from './app/git/credentials.ts';
 import { openWorkspace, type Workspace } from './app/git/workspace.ts';
+import { readNote, writeNote } from './app/git/notes.ts';
 import { colors, space, body } from './app/theme/tokens.ts';
 
 type Tab = 'notes' | 'edit' | 'read';
@@ -26,6 +28,11 @@ export default function App(): React.JSX.Element {
   const [sync, setSync] = useState<SyncState>(IDLE_STATE);
   const [ready, setReady] = useState(false);
   const [revision, setRevision] = useState(0);
+
+  /** The note being resolved, or null when no conflict is open. */
+  const [conflictPath, setConflictPath] = useState<string | null>(null);
+  const [conflictText, setConflictText] = useState('');
+  const [problem, setProblem] = useState<string | null>(null);
 
   // Load the workspace once. A repo that has never been configured is not an
   // error, it is the first-run state.
@@ -86,7 +93,58 @@ export default function App(): React.JSX.Element {
     });
   }, [controller]);
 
-  const configured = useMemo(() => workspace !== null, [workspace]);
+  /**
+   * Open a note.
+   *
+   * A conflicted note goes to the resolution screen; anything else to the editor.
+   * The conflicted text is read once, here, and the resolution screen works on
+   * that snapshot — re-reading per tap would renumber the regions underneath the
+   * user's choices.
+   */
+  const openNote = useCallback(
+    async (item: { path: string; conflicted: boolean }) => {
+      if (!item.conflicted) {
+        setTab('edit');
+        return;
+      }
+      if (!workspace) return;
+      setProblem(null);
+      const text = await readNote(workspace.dir, item.path);
+      if (text === null) {
+        setProblem(`讀不到 ${item.path}`);
+        return;
+      }
+      setConflictPath(item.path);
+      setConflictText(text);
+    },
+    [workspace],
+  );
+
+  /** Write a resolved note, then let the next sync carry it. */
+  const saveResolution = useCallback(
+    async (resolved: string) => {
+      if (!workspace || conflictPath === null) return;
+      try {
+        // `guard` re-checks the markers on the exact text being written, so a
+        // bug upstream of here still cannot commit a note with markers in it.
+        await writeNote(workspace.dir, conflictPath, resolved, { guard: true });
+        setConflictPath(null);
+        setConflictText('');
+        setRevision((r) => r + 1);
+        // A resolved note is local work that the remote does not have yet.
+        setProblem(null);
+      } catch (err) {
+        setProblem(err instanceof Error ? `無法儲存：${err.message}` : '無法儲存');
+      }
+    },
+    [workspace, conflictPath],
+  );
+
+  /** Hand the note to the editor for manual resolution. */
+  const editManually = useCallback(() => {
+    setConflictPath(null);
+    setTab('edit');
+  }, []);
 
   if (!ready) {
     return (
@@ -96,8 +154,25 @@ export default function App(): React.JSX.Element {
     );
   }
 
-  if (!configured) {
+  if (!workspace) {
     return <RepoSetupScreen onConnected={onConnected} />;
+  }
+
+  // A conflict takes over the screen: it is the one thing that cannot be deferred,
+  // because it is also blocking the sync that would carry the fix.
+  if (conflictPath !== null) {
+    return (
+      <View style={styles.root}>
+        <ConflictScreen
+          path={conflictPath}
+          text={conflictText}
+          onSave={(resolved) => void saveResolution(resolved)}
+          onEditManually={editManually}
+          onCancel={() => setConflictPath(null)}
+        />
+        {problem && <Text style={styles.problem}>{problem}</Text>}
+      </View>
+    );
   }
 
   return (
@@ -108,11 +183,11 @@ export default function App(): React.JSX.Element {
         ))}
       </View>
 
-      {tab === 'notes' && workspace && (
+      {tab === 'notes' && (
         <NoteListScreen
           dir={workspace.dir}
           revision={revision}
-          onOpen={() => setTab('edit')}
+          onOpen={(item) => void openNote(item)}
           onSync={onSync}
           busy={sync.busy}
         />
@@ -168,4 +243,5 @@ const styles = StyleSheet.create({
   tabText: { ...body, fontSize: 14, color: colors.textMuted },
   tabTextActive: { color: colors.accent, fontWeight: '700' },
   meta: { ...body, color: colors.textMuted, fontSize: 13 },
+  problem: { ...body, color: colors.danger, fontSize: 13, padding: space.md },
 });
