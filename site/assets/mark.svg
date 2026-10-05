@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32" role="img" aria-label="mark">
+  <!-- A lowercase "m" drawn as three strokes on a baseline, which reads as both
+       a letter and a commit graph. Uses currentColor so it inherits the page's
+       text colour in both colour schemes. -->
+  <g fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M6 24V10" />
+    <path d="M6 15c3.2 0 5-2.4 5-5s-1.8-5-5-5" />
+    <path d="M11 15c3.2 0 5-2.4 5-5s-1.8-5-5-5" />
+    <path d="M16 24V10" />
+    <path d="M16 15c3.2 0 5-2.4 5-5s-1.8-5-5-5" />
+    <path d="M21 24V10" />
+  </g>
+  <!-- The baseline stands in for a git branch line. -->
+  <path d="M3 28h26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.35" />
+  <!-- One commit dot, offset: the whole point of the product. -->
+  <circle cx="23" cy="10" r="3.4" fill="currentColor" />
+</svg>

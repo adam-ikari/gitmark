@@ -1,0 +1,56 @@
+# Deploy site/ to GitHub Pages.
+#
+# The site is plain static files with no build step, so this workflow only has to
+# upload and publish them. That is a deliberate choice: a landing page does not
+# need a toolchain, and there is nothing here that can break between builds.
+#
+# One-time setup, required once per repository:
+#   Settings → Pages → Build and deployment → Source → "GitHub Actions"
+#
+# Deployment is a deploy action keyed on a published build artifact rather than a
+# branch, so a commit to main cannot change the live site until this workflow has
+# run and published.
+
+name: Deploy site to Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'site/**'
+      - '.github/workflows/deploy-pages.yml'
+  # Lets a deploy be retried from the Actions tab without pushing a commit.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Only one deployment at a time; a second push should not race the first.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure Pages
+        id: pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload the site
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # Static files only, so this is a copy rather than a build.
+          path: site
+
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630" role="img" aria-label="mark — 以 git 為儲存層的 markdown 筆記 app">
+  <rect width="1200" height="630" fill="#fbfaf8"/>
+  <rect width="1200" height="6" fill="#b3410a"/>
+
+  <!-- Wordmark: the same stroke construction as the favicon. -->
+  <g transform="translate(84 132)" fill="none" stroke="#191817" stroke-width="13" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M0 132V0"/>
+    <path d="M0 46c14 0 22-11 22-23S14 0 0 0"/>
+    <path d="M22 46c14 0 22-11 22-23S36 0 22 0"/>
+    <path d="M44 132V0"/>
+    <path d="M44 46c14 0 22-11 22-23S58 0 44 0"/>
+    <path d="M66 132V0"/>
+  </g>
+  <path d="M84 282h150" stroke="#191817" stroke-width="8" stroke-linecap="round" opacity="0.3"/>
+  <circle cx="218" cy="155" r="13" fill="#191817"/>
+
+  <text x="300" y="205" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="30" fill="#7d7a72">$ git log notes/merge.md</text>
+
+  <text x="300" y="268" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="27" fill="#b3410a">commit a3f19c7  HEAD</text>
+  <text x="300" y="312" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="27" fill="#191817">整理合併策略</text>
+
+  <text x="300" y="380" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="27" fill="#b3410a">commit 7b2e004</text>
+  <text x="300" y="424" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="27" fill="#191817">補充 mermaid 流程圖</text>
+
+  <text x="84" y="500" font-family="system-ui, -apple-system, 'Noto Sans TC', sans-serif" font-size="56" font-weight="700" letter-spacing="-1.5" fill="#191817">筆記就是 git 倉庫裡的</text>
+  <text x="84" y="572" font-family="system-ui, -apple-system, 'Noto Sans TC', sans-serif" font-size="56" font-weight="700" letter-spacing="-1.5" fill="#b3410a">markdown 檔</text>
+</svg>
