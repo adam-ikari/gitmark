@@ -8,7 +8,7 @@
  * taps land on the wrong character. See app/components/RichTextEditor.tsx.
  */
 
-import { Platform, type TextStyle } from 'react-native';
+import type { TextStyle } from 'react-native';
 
 export const colors = {
   bg: '#ffffff',
@@ -36,17 +36,15 @@ export const space = {
 } as const;
 
 /**
- * A monospace stack.
+ * A monospace family.
  *
- * Android maps `monospace` to Droid Sans Mono; iOS to Menlo. Falling back to
- * `monospace` rather than a specific family keeps code blocks readable without
- * bundling a font file.
+ * `'monospace'` is a generic family that React Native resolves on both
+ * platforms — Droid Sans Mono on Android, Menlo on iOS — so it avoids bundling
+ * a font file and avoids importing `Platform` here. Dropping that import keeps
+ * this module loadable from a plain Node test, which is what lets the editor's
+ * typography be asserted without a renderer.
  */
-export const mono = Platform.select({
-  ios: 'Menlo',
-  android: 'monospace',
-  default: 'monospace',
-});
+export const mono = 'monospace';
 
 /**
  * The base paragraph style.
