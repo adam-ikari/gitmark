@@ -1,6 +1,6 @@
 # Brain Index
 
-_Auto-generated. Last updated 2026-10-05T09:21:57.010Z._
+_Auto-generated. Last updated 2026-10-05T09:52:38.087Z._
 
 - [android-first-target](pages/android-first-target.md) — category: decision | tags: [iOS 延後但程式碼保持跨平台] | # Android 先行驗證
 - [android-release-signing](pages/android-release-signing.md) — category: decision | tags: [發布, 簽名, 資料遺失] | <current best understanding — replace this with the real content>

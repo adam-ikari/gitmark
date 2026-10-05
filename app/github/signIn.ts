@@ -67,11 +67,29 @@ export class SignInError extends Error {
   }
 }
 
-/** The credentials the app ships with. */
+/**
+ * The credentials the app ships with.
+ *
+ * ## Both of these are public, and the `EXPO_PUBLIC_` prefix is what says so
+ *
+ * Expo inlines `EXPO_PUBLIC_*` into the JavaScript bundle, which is exactly what
+ * a public client requires: the client id is public by definition, and GitHub's
+ * guidance for a native app is to ship the client secret and let PKCE be the
+ * actual protection. So the secret is not a secret in the sense of being
+ * unguessable — anyone who unzips the APK can read it, and by design they can.
+ *
+ * The naming is the hazard, not the mechanism. `EXPO_PUBLIC_GITHUB_CLIENT_SECRET`
+ * looks like a server-side secret that somebody fat-fingered into a public
+ * variable, and the next maintainer to need a genuinely secret value may add it
+ * here — where it would be committed to this repository and shipped to every
+ * device. Anything confidential belongs on a server, not in this app.
+ *
+ * See brain/pages/github-app-account-auth.md.
+ */
 export function credentials(): AppCredentials {
-  const extra = (process.env.EXPO_PUBLIC_GITHUB_CLIENT_ID ?? '').trim();
-  const secret = (process.env.EXPO_PUBLIC_GITHUB_CLIENT_SECRET ?? '').trim();
-  return { clientId: extra, clientSecret: secret };
+  const clientId = (process.env.EXPO_PUBLIC_GITHUB_CLIENT_ID ?? '').trim();
+  const clientSecret = (process.env.EXPO_PUBLIC_GITHUB_CLIENT_SECRET ?? '').trim();
+  return { clientId, clientSecret };
 }
 
 /** Whether the build has credentials at all, so the UI can say so usefully. */

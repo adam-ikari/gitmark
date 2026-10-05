@@ -18,6 +18,21 @@ expo-env.d.ts
 *.key
 *.mobileprovision
 
+# Signing keys, anywhere in the tree.
+#
+# Not paranoia. The release key for this project lives outside the repository
+# (~/.config/mark-signing) precisely because a leaked signing key lets anyone sign
+# an update Android accepts as this app — and this app holds the user's notes in
+# local storage. Losing or replacing the key also means every install has to be
+# removed before the next one can be installed, which destroys those notes.
+#
+# `*.jks` above already covered the usual extension inside android/, but a
+# keystore dropped in the repository root is the more natural place to put one and
+# was not ignored.
+*.keystore
+*.pass
+signing/
+
 # Metro
 .metro-health-check*
 
