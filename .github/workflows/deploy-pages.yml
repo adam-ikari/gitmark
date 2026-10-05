@@ -8,14 +8,16 @@
 #   Settings → Pages → Build and deployment → Source → "GitHub Actions"
 #
 # Deployment is a deploy action keyed on a published build artifact rather than a
-# branch, so a commit to main cannot change the live site until this workflow has
-# run and published.
+# branch, so a commit cannot change the live site until this workflow has run and
+# published.
 
 name: Deploy site to Pages
 
 on:
   push:
-    branches: [main]
+    # This repository's default branch is `master`. Listing both keeps the
+    # workflow working if the branch is ever renamed.
+    branches: [master, main]
     paths:
       - 'site/**'
       - '.github/workflows/deploy-pages.yml'
