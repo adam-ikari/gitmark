@@ -21,9 +21,6 @@ expo-env.d.ts
 # Metro
 .metro-health-check*
 
-# Local bundle output, including the path the CI workflow exports to.
-.expo-export/
-
 # debug
 npm-debug.*
 yarn-debug.*

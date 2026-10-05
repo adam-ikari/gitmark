@@ -40,14 +40,14 @@ jobs:
   verify:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       # Before setup-node, because that step's pnpm cache needs pnpm present.
       # The version comes from `packageManager` in package.json, so there is one
       # place to change it rather than two that can disagree.
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: pnpm
@@ -71,17 +71,24 @@ jobs:
       - name: Differential merge test
         run: pnpm differential
 
+      # Output goes to Expo's default `dist/`, which is already gitignored.
+      # An earlier version wrote to `.expo-export/`, and that directory name was
+      # the whole problem: upload-artifact has skipped dot-directories since v4
+      # unless `include-hidden-files` is set, so the step reported success while
+      # uploading nothing at all.
       - name: Build the Android bundle
-        run: npx expo export --platform android --output-dir .expo-export
+        run: npx expo export --platform android
 
       # Kept so a bundle failure on someone else's machine can be inspected
-      # without reproducing it. The Hermes bytecode is small enough to be worth
-      # carrying and awkward to regenerate by hand.
+      # without reproducing it. `error` rather than `ignore`: the step above must
+      # have produced this directory, so a miss here means something is wrong and
+      # should not pass quietly — which is exactly what the previous
+      # configuration did.
       - name: Upload the bundle
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: android-bundle
-          path: .expo-export
+          path: dist
           retention-days: 7
-          if-no-files-found: ignore
+          if-no-files-found: error
