@@ -178,22 +178,26 @@ Date:   Sat Oct 4 22:07
           <li>Mermaid 图与 SVG 图形</li>
           <li>接入 GitHub 仓库，保存即提交</li>
           <li>多设备同步，改动不重叠时自动合并</li>
+          <li>笔记列表与逐处冲突处理</li>
         </ul>
       </div>
 
       <div class="status-card">
         <h3>还在进行</h3>
         <ul class="pending">
-          <li>真机上的编辑器手感与中文输入体验</li>
-          <li>冲突处理的交互打磨</li>
-          <li>笔记列表与标签管理</li>
+          <li><b>真机上的编辑器手感与中文输入体验</b> —— 完全还没验证过</li>
+          <li>编辑器接上你仓库里的真实笔记</li>
+          <li>冲突处理界面的打磨</li>
+          <li>长笔记的性能（分区块虚拟化）</li>
           <li>iOS 版本</li>
         </ul>
       </div>
     </div>
 
     <p class="section-lede" style="margin-top: 2rem;">
-      目前以 Android 为主要目标。技术细节、决策记录与开发进度都放在
+      合并引擎与适配层的核心逻辑都有测试覆盖，其中合并引擎会与一个独立的
+      diff3 实现逐字比对。但<strong>没有任何一个环节在真机上跑过</strong> ——
+      开发这台机器没有可用的模拟器。技术细节、决策记录与开发进度都放在
       <a href="https://github.com/adam-ikari/gitmark">仓库</a>里。
     </p>
 

@@ -237,6 +237,50 @@ h2 {
 
 .section-lede { color: var(--ink-2); max-width: 58ch; margin: 0 0 2rem; }
 
+/* ---------------- download ---------------- */
+
+.download { max-width: 46rem; }
+
+.download-lede {
+  font-size: clamp(1rem, 0.96rem + 0.2vw, 1.1rem);
+  color: var(--ink-2);
+  margin: 0 0 1.5rem;
+}
+
+/*
+ * A filled button rather than a link with an arrow: this is the one action on
+ * the page, and it should look like one. Monospace for the version and size,
+ * because those are facts to be read rather than prose.
+ */
+.btn {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.7rem;
+  padding: 0.7rem 1.15rem;
+  background: var(--ink);
+  color: var(--paper);
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: opacity 0.15s ease;
+}
+.btn:hover { opacity: 0.85; }
+
+.btn-meta {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  font-weight: 400;
+  color: var(--paper);
+  opacity: 0.72;
+}
+
+.download-note {
+  font-size: 0.88rem;
+  color: var(--muted);
+  margin: 1.25rem 0 0;
+  max-width: 58ch;
+}
+
 /* ---------------- principles ---------------- */
 
 .principles {
